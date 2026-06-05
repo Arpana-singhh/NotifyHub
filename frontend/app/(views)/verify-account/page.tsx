@@ -2,23 +2,24 @@
 
 import Link from 'next/link';
 import { Formik, Form } from 'formik';
-import { Input, Checkbox } from 'antd';
-import AuthLayout from './components/layout/AuthLayout';
+import { Input } from 'antd';
+import AuthLayout from '../../components/layout/AuthLayout';
 
-export default function LoginPage() {
+export default function VerifyAccountPage() {
   return (
-    <AuthLayout pageLabel="Login" subtitle="Sign in to your account">
+    <AuthLayout pageLabel="Verify Account" subtitle="Verify your email address">
       <Formik
-        initialValues={{ email: '', password: '' }}
+        initialValues={{ email: '', otp: '' }}
         validate={(values) => {
           const errors: Record<string, string> = {};
           if (!values.email) errors.email = 'Email is required';
           else if (!/\S+@\S+\.\S+/.test(values.email)) errors.email = 'Invalid email';
-          if (!values.password) errors.password = 'Password is required';
+          if (!values.otp) errors.otp = 'OTP is required';
+          else if (values.otp.length !== 6) errors.otp = 'OTP must be 6 digits';
           return errors;
         }}
         onSubmit={(values) => {
-          console.log('Login:', values);
+          console.log('Verify:', values);
         }}
       >
         {({ values, errors, touched, handleChange, handleBlur }) => (
@@ -40,34 +41,30 @@ export default function LoginPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <Input.Password
-                id="password"
-                placeholder="Enter your password"
-                value={values.password}
+              <label htmlFor="otp">OTP Code</label>
+              <Input
+                id="otp"
+                placeholder="Enter 6-digit OTP"
+                maxLength={6}
+                value={values.otp}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                status={touched.password && errors.password ? 'error' : ''}
+                status={touched.otp && errors.otp ? 'error' : ''}
               />
-              {touched.password && errors.password && (
-                <small className="text-danger">{errors.password}</small>
+              {touched.otp && errors.otp ? (
+                <small className="text-danger">{errors.otp}</small>
+              ) : (
+                <small className="text-muted-color fs-sm mt-1 d-block">Check your email for the OTP.</small>
               )}
             </div>
 
-            <div className="d-flex align-items-center justify-content-between mb-4">
-              <div className="form-checkbox">
-                <Checkbox /> <label>Remember me</label>
-              </div>
-              <Link href="/forgot-password" className="fs-sm">Forgot password?</Link>
-            </div>
-
             <button type="submit" className="nh-btn nh-btn--secondary nh-btn--full mb-3">
-              Sign in
+              Verify Account
             </button>
 
             <p className="text-center fs-sm text-muted-color">
-              Don&apos;t have an account?{' '}
-              <Link href="/register">Register</Link>
+              Didn&apos;t receive OTP?{' '}
+              <Link href="/register">Resend OTP</Link>
             </p>
           </Form>
         )}

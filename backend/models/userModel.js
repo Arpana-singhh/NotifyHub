@@ -23,7 +23,27 @@ const userSchema = new mongoose.Schema(
         avatar:{
             type:String,
             default:'https://placehold.net/default.png'
-        }
+        },
+        verifyOtp:{
+            type:String,
+            default:'',
+        },
+        verifyOtpExpireAt:{
+            type:Number,
+             default:0
+        },
+        isAccountVerified:{
+            type:Boolean,
+             default:false
+        },
+        resetOtp:{
+            type:String,
+             default:''
+        },
+        resetOtpExpireAt:{
+            type:Number,
+             default:0
+        },
     },{
         timestamps:true
     }
