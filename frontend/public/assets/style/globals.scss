@@ -317,15 +317,28 @@ textarea.nh-input {
   }
 }
 
-.form-check {
-  display: flex;
+.ant-checkbox-wrapper:not(.ant-checkbox-wrapper-disabled):hover .ant-checkbox, .ant-checkbox:not(.ant-checkbox-disabled):hover .ant-checkbox {
+  border-color:  var(--color-primary);
+}
+
+.ant-checkbox-checked{
+  background-color:  var(--color-primary);
+  border-color:  var(--color-primary);
+}
+
+.ant-checkbox-checked:not(.ant-checkbox-disabled):hover{
+  background-color:  var(--color-primary);
+  border-color:  var(--color-primary);
+}
+
+.form-checkbox {
+  display: flex !important;
   align-items: center;
   gap: var(--space-2);
 
   input[type='checkbox'] {
     width: 16px;
     height: 16px;
-    accent-color: var(--color-primary);
     cursor: pointer;
     flex-shrink: 0;
   }

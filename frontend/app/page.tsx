@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import AuthLayout from './components/layout/AuthLayout';
+import { Checkbox } from 'antd'
 
 export default function LoginPage() {
   return (
@@ -25,8 +26,9 @@ export default function LoginPage() {
       </div>
 
       <div className="d-flex align-items-center justify-content-between mb-4">
-        <div className="form-check">
-          <input type="checkbox" id="remember" defaultChecked />
+        <div className="form-checkbox">
+          {/* <input type="checkbox" id="remember" defaultChecked /> */}
+          <Checkbox/>
           <label htmlFor="remember">Remember me</label>
         </div>
         <Link href="#" className="fs-sm">Forgot password?</Link>
