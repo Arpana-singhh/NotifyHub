@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/mongodb.js';
 import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 dotenv.config();
 
@@ -16,7 +17,8 @@ app.get("/", (_req, res) => {
   res.json({ message: "NotifyHub API is running" }); 
 });
 
-app.use('/api/auth', authRoutes);
+app.use('/api', authRoutes);
+app.use('/api', userRoutes);
 
 connectDB().then(() => {
   app.listen(PORT, () => {
