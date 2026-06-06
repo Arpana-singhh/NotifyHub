@@ -1,6 +1,5 @@
 import axios, { type AxiosResponse } from "axios";
 import apiRoutes from "@/config/apiRoutes";
-import AxiosService from "../axios.services";
 import "../apiClient";
 
 type ApiResponse = {
@@ -42,11 +41,11 @@ type ChangePasswordPayload = {
 };
 
 class AuthService {
-  static async Register(name: string, email: string, password: string): Promise<AxiosResponse<ApiResponse>> {
+  static async register(name: string, email: string, password: string): Promise<AxiosResponse<ApiResponse>> {
     const payload: RegisterPayload = { name, email, password };
 
     return axios.post(apiRoutes.auth.register, payload, {
-      headers: AxiosService.getJsonHeader(),
+      headers: { Accept: "application/json" },
     });
   }
 
@@ -54,7 +53,7 @@ class AuthService {
     const payload: VerifyEmailPayload = { email, otp };
 
     return axios.post(apiRoutes.auth.verifyEmail, payload, {
-      headers: AxiosService.getJsonHeader(),
+      headers: { Accept: "application/json" },
     });
   }
 
@@ -62,7 +61,7 @@ class AuthService {
     const payload: LoginPayload = { email, password };
 
     return axios.post(apiRoutes.auth.login, payload, {
-      headers: AxiosService.getJsonHeader(),
+      headers: { Accept: "application/json" },
     });
   }
 
@@ -70,7 +69,7 @@ class AuthService {
     const payload: ForgotPasswordPayload = { email };
 
     return axios.post(apiRoutes.auth.forgotPassword, payload, {
-      headers: AxiosService.getJsonHeader(),
+      headers: { Accept: "application/json" },
     });
   }
 
@@ -78,7 +77,7 @@ class AuthService {
     const payload: ResetPasswordPayload = { email, otp, newPassword };
 
     return axios.post(apiRoutes.auth.resetPassword, payload, {
-      headers: AxiosService.getJsonHeader(),
+      headers: { Accept: "application/json" },
     });
   }
 
@@ -87,7 +86,7 @@ class AuthService {
 
     return axios.post(apiRoutes.auth.changePassword, payload, {
       headers: {
-        ...AxiosService.getJsonHeader(),
+        Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });

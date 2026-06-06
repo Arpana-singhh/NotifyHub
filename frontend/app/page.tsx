@@ -1,77 +1,34 @@
-'use client';
-
 import Link from 'next/link';
-import { Formik, Form } from 'formik';
-import { Input, Checkbox } from 'antd';
-import AuthLayout from './components/layout/AuthLayout';
 
-export default function LoginPage() {
+export default function LandingPage() {
   return (
-    <AuthLayout pageLabel="Login" subtitle="Sign in to your account">
-      <Formik
-        initialValues={{ email: '', password: '' }}
-        validate={(values) => {
-          const errors: Record<string, string> = {};
-          if (!values.email) errors.email = 'Email is required';
-          else if (!/\S+@\S+\.\S+/.test(values.email)) errors.email = 'Invalid email';
-          if (!values.password) errors.password = 'Password is required';
-          return errors;
-        }}
-        onSubmit={(values) => {
-          console.log('Login:', values);
-        }}
-      >
-        {({ values, errors, touched, handleChange, handleBlur }) => (
-          <Form>
-            <div className="form-group">
-              <label htmlFor="email">Email address</label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={values.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                status={touched.email && errors.email ? 'error' : ''}
-              />
-              {touched.email && errors.email && (
-                <small className="text-danger">{errors.email}</small>
-              )}
-            </div>
+    <main className="auth-layout">
+      <div className="auth-layout__bar">NotifyHub</div>
+      <section className="auth-layout__main">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12 col-md-8 col-lg-6">
+              <div className="auth-layout__card text-center">
+                <div className="auth-layout__brand">
+                  <div className="auth-layout__brand-title justify-content-center">
+                    <i className="fas fa-bell" />
+                    NotifyHub
+                  </div>
+                  <div className="auth-layout__brand-sub">Landing page coming soon</div>
+                </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <Input.Password
-                id="password"
-                placeholder="Enter your password"
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                status={touched.password && errors.password ? 'error' : ''}
-              />
-              {touched.password && errors.password && (
-                <small className="text-danger">{errors.password}</small>
-              )}
-            </div>
+                <p className="text-muted-color mb-4">
+                  We are preparing the public landing page. You can continue with authentication for now.
+                </p>
 
-            <div className="d-flex align-items-center justify-content-between mb-4">
-              <div className="form-checkbox">
-                <Checkbox /> <label>Remember me</label>
+                <Link href="/login" className="nh-btn nh-btn--secondary">
+                  Go to login
+                </Link>
               </div>
-              <Link href="/forgot-password" className="fs-sm">Forgot password?</Link>
             </div>
-
-            <button type="submit" className="nh-btn nh-btn--secondary nh-btn--full mb-3">
-              Sign in
-            </button>
-
-            <p className="text-center fs-sm text-muted-color">
-              Don&apos;t have an account?{' '}
-              <Link href="/register">Register</Link>
-            </p>
-          </Form>
-        )}
-      </Formik>
-    </AuthLayout>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

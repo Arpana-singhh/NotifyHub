@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import "bootstrap/dist/css/bootstrap.min.css";
+import "react-toastify/dist/ReactToastify.css";
 import "../public/assets/style/globals.scss";
+import ToastProvider from "./components/common/ToastProvider";
 import DemoNav from "./components/layout/DemoNav";
 
 export const metadata: Metadata = {
@@ -25,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AntdRegistry>
           <DemoNav />
           {children}
+          <ToastProvider />
         </AntdRegistry>
       </body>
     </html>

@@ -4,8 +4,24 @@ import Link from 'next/link';
 import { Formik, Form } from 'formik';
 import { Input } from 'antd';
 import AuthLayout from '../../components/layout/AuthLayout';
+import AuthService from '@/app/service/api/auth.services';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
+import { AxiosError } from 'axios';
 
 export default function VerifyAccountPage() {
+  const router = useRouter();
+  const handleSubmit = async (values: { email: string; otp: string }) => {
+    try{
+       const response = await AuthService.verifyEmail(values.email, values.otp);
+       toast.success(response.data.message || "Email verified successfully");
+       router.push("/dashboard");
+    }catch(error){
+        const axiosError = error as AxiosError<{ message?: string }>;
+        const errorMessage = axiosError.response?.data?.message || axiosError.message || "Verification failed";
+        toast.error(errorMessage);
+    }
+  }
   return (
     <AuthLayout pageLabel="Verify Account" subtitle="Verify your email address">
       <Formik
@@ -18,9 +34,7 @@ export default function VerifyAccountPage() {
           else if (values.otp.length !== 6) errors.otp = 'OTP must be 6 digits';
           return errors;
         }}
-        onSubmit={(values) => {
-          console.log('Verify:', values);
-        }}
+        onSubmit={handleSubmit}
       >
         {({ values, errors, touched, handleChange, handleBlur }) => (
           <Form>

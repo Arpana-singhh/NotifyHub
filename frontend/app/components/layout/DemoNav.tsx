@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const SCREENS = [
-  { label: 'Login',               href: '/' },
+  { label: 'Home',                href: '/' },
+  { label: 'Login',               href: '/login' },
   { label: 'Register',            href: '/register' },
   { label: 'User Dashboard',      href: '/dashboard' },
   { label: 'Notifications',       href: '/notifications' },

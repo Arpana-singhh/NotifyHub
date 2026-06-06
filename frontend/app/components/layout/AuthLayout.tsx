@@ -1,3 +1,5 @@
+import ClientOnly from "../common/ClientOnly";
+
 interface AuthLayoutProps {
   pageLabel: string;
   subtitle: string;
@@ -22,7 +24,7 @@ export default function AuthLayout({ pageLabel, subtitle, children }: AuthLayout
                   <div className="auth-layout__brand-sub">{subtitle}</div>
                 </div>
 
-                {children}
+                <ClientOnly>{children}</ClientOnly>
               </div>
             </div>
           </div>
