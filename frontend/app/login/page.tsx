@@ -4,30 +4,26 @@ import Link from 'next/link';
 import { Formik, Form } from 'formik';
 import { Input, Checkbox } from 'antd';
 import AuthLayout from '../components/layout/AuthLayout';
-import AuthService from '../service/api/auth.services';
 import { toast } from 'react-toastify';
-import {useRouter} from 'next/navigation';
-import { AxiosError } from 'axios';
-import AxiosService from '../service/axios.services';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const router = useRouter();
 
   const handleSubmit = async (values: { email: string; password: string; rememberMe: boolean }) => {
-   try{
-    const response = await AuthService.login(values.email, values.password);
+    const result = await signIn("credentials", {
+      email: values.email,
+      password: values.password,
+      redirect: false,
+    });
 
-    if (response.data.token) {
-      AxiosService.setToken(response.data.token, values.rememberMe);
+    if (result?.error) {
+      toast.error("Invalid email or password");
+    } else {
+      toast.success("Login successful");
+      router.push("/dashboard");
     }
-
-    toast.success("Login successful");
-    router.push("/dashboard");
-   }catch(error){
-     const axiosError = error as AxiosError<{ message?: string }>;
-     const errorMessage = axiosError.response?.data?.message || axiosError.message || "Verification failed";
-     toast.error(errorMessage)
-   }
   }
   return (
     <AuthLayout pageLabel="Login" subtitle="Sign in to your account">

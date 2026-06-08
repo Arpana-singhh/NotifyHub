@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "../public/assets/style/globals.scss";
 import ToastProvider from "./components/common/ToastProvider";
 import DemoNav from "./components/layout/DemoNav";
+import SessionWrapper from "./components/common/SessionWrapper";
 
 export const metadata: Metadata = {
   title: "NotifyHub",
@@ -25,9 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AntdRegistry>
-          <DemoNav />
-          {children}
-          <ToastProvider />
+          <SessionWrapper>
+            <DemoNav />
+            {children}
+            <ToastProvider />
+          </SessionWrapper>
         </AntdRegistry>
       </body>
     </html>
