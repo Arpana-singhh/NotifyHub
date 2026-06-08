@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema(
             type:String,
             default:'https://placehold.net/default.png'
         },
+        isBlocked: {
+            type: Boolean,
+            default: false,
+        },
         verifyOtp:{
             type:String,
             default:'',

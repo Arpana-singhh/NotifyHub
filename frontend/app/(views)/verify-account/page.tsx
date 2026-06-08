@@ -8,13 +8,33 @@ import AuthService from '@/app/service/api/auth.services';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { AxiosError } from 'axios';
+import { signIn } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 export default function VerifyAccountPage() {
   const router = useRouter();
+  const [pendingEmail, setPendingEmail] = useState('');
+
+  useEffect(() => {
+    const pending = sessionStorage.getItem('pendingAuth');
+    if (pending) {
+      const { email } = JSON.parse(pending);
+      setPendingEmail(email);
+    }
+  }, []);
   const handleSubmit = async (values: { email: string; otp: string }) => {
     try{
        const response = await AuthService.verifyEmail(values.email, values.otp);
        toast.success(response.data.message || "Email verified successfully");
+
+       // Auto sign-in using credentials stored during registration
+       const pending = sessionStorage.getItem('pendingAuth');
+       if (pending) {
+         const { email, password } = JSON.parse(pending);
+         sessionStorage.removeItem('pendingAuth');
+         await signIn("credentials", { email, password, redirect: false });
+       }
+
        router.push("/dashboard");
     }catch(error){
         const axiosError = error as AxiosError<{ message?: string }>;
@@ -25,11 +45,10 @@ export default function VerifyAccountPage() {
   return (
     <AuthLayout pageLabel="Verify Account" subtitle="Verify your email address">
       <Formik
-        initialValues={{ email: '', otp: '' }}
+        initialValues={{ email: pendingEmail, otp: '' }}
+        enableReinitialize
         validate={(values) => {
           const errors: Record<string, string> = {};
-          if (!values.email) errors.email = 'Email is required';
-          else if (!/\S+@\S+\.\S+/.test(values.email)) errors.email = 'Invalid email';
           if (!values.otp) errors.otp = 'OTP is required';
           else if (values.otp.length !== 6) errors.otp = 'OTP must be 6 digits';
           return errors;
@@ -43,11 +62,9 @@ export default function VerifyAccountPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
                 value={values.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                status={touched.email && errors.email ? 'error' : ''}
+                readOnly
+                disabled
               />
               {touched.email && errors.email && (
                 <small className="text-danger">{errors.email}</small>

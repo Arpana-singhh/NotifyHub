@@ -20,6 +20,8 @@ const handleSubmit = async (values: {name: string; email: string; password: stri
 
     const response = await AuthService.register(values.name, values.email, values.password);
     toast.success(response.data.message || "Account created successfully");
+    // Temporarily store credentials so verify-account can sign in automatically after OTP
+    sessionStorage.setItem('pendingAuth', JSON.stringify({ email: values.email, password: values.password }));
     router.push("/verify-account");
 
   } catch (error) {

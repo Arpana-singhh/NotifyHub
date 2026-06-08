@@ -5,9 +5,57 @@ import Link from 'next/link';
 import { Formik, Form } from 'formik';
 import { Input } from 'antd';
 import AuthLayout from '../../components/layout/AuthLayout';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
+import AuthService from '@/app/service/api/auth.services';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState<'forgot' | 'reset'>('forgot');
+  const [loading, setLoading]= useState(false);
+  const router = useRouter();
+
+  const handleForgetPassSubmit = async(values: {email: string;})=>{
+    try{
+      setLoading(true);
+      const response =await AuthService.forgotPassword(values.email);
+      toast.success(response.data.message || "Password reset OTP sent to your email");
+      sessionStorage.setItem('pendingAuth', JSON.stringify({ email: values.email }));
+      setStep('reset');
+    } 
+    catch(error){
+       const axiosError = error as AxiosError<{ message?: string }>;
+       const errorMessage = axiosError.response?.data?.message || axiosError.message || "Forget Password Error";
+       toast.error(errorMessage);
+    } 
+    finally {
+      setLoading(false);
+    }
+  }
+
+  const handleResetPassSubmit = async (values: { otp: string; newPassword: string; confirmPassword: string }) => {
+    try {
+      setLoading(true);
+
+      const pending = sessionStorage.getItem('pendingAuth');
+      const { email } = pending ? JSON.parse(pending) : { email: '' };
+
+      await AuthService.resetPassword(email, values.otp, values.newPassword);
+      toast.success("Password reset successfully");
+
+      // Auto sign-in with new password then clear stored credentials
+      sessionStorage.removeItem('pendingAuth');
+      await signIn("credentials", { email, password: values.newPassword, redirect: false });
+
+      router.push("/dashboard");
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      toast.error(axiosError.response?.data?.message || axiosError.message || "Reset Password Error");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <AuthLayout
@@ -23,10 +71,7 @@ export default function ForgotPasswordPage() {
             else if (!/\S+@\S+\.\S+/.test(values.email)) errors.email = 'Invalid email';
             return errors;
           }}
-          onSubmit={(values) => {
-            console.log('Forgot password:', values);
-            setStep('reset');
-          }}
+          onSubmit={handleForgetPassSubmit}
         >
           {({ values, errors, touched, handleChange, handleBlur }) => (
             <Form>
@@ -70,9 +115,7 @@ export default function ForgotPasswordPage() {
             else if (values.confirmPassword !== values.newPassword) errors.confirmPassword = 'Passwords do not match';
             return errors;
           }}
-          onSubmit={(values) => {
-            console.log('Reset password:', values);
-          }}
+          onSubmit={handleResetPassSubmit}
         >
           {({ values, errors, touched, handleChange, handleBlur }) => (
             <Form>
