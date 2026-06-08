@@ -1,22 +1,7 @@
 import axios from "axios";
-import { getSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
-// Request interceptor — attaches Bearer token to every request
-axios.interceptors.request.use(
-    async (config) => {
-        const session = await getSession();
-        const token = session?.user?.accessToken;
-
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Response interceptor — handles 401 globally
+// Response interceptor — handles 401 globally by signing out
 axios.interceptors.response.use(
     (response) => response,
     async (error) => {
