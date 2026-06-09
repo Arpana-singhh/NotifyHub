@@ -15,23 +15,10 @@ const notificationSchema = new mongoose.Schema(
             enum: ['info', 'success', 'warning', 'error'],
             default: 'info',
         },
-        recipient: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true,
-        },
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
-        },
-        isRead: {
-            type: Boolean,
-            default: false,
-        },
-        isDeletedByUser: {
-            type: Boolean,
-            default: false,
         },
     },
     {
