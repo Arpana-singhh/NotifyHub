@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 
 interface NavItem {
   label: string;
@@ -10,25 +11,23 @@ interface NavItem {
 }
 
 const USER_NAV: NavItem[] = [
-  { label: 'Dashboard',     href: '/dashboard',     icon: 'fas fa-table-cells' },
+  { label: 'Dashboard',     href: '/dashboard',      icon: 'fas fa-table-cells' },
   { label: 'Notifications', href: '/notifications',  icon: 'fas fa-bell' },
   { label: 'Profile',       href: '/profile',        icon: 'fas fa-user' },
 ];
 
 const ADMIN_NAV: NavItem[] = [
-  { label: 'Dashboard',         href: '/admin',       icon: 'fas fa-table-cells' },
-  { label: 'Send Notification', href: '/admin/send',  icon: 'fas fa-paper-plane' },
-  { label: 'Notifications',     href: '/notifications', icon: 'fas fa-bell' },
-  { label: 'Users',             href: '/admin/users', icon: 'fas fa-users' },
-  { label: 'Analytics',         href: '/admin/analytics', icon: 'fas fa-chart-bar' },
+  { label: 'Dashboard',         href: '/admin',              icon: 'fas fa-table-cells' },
+  { label: 'Send Notification', href: '/admin/send',         icon: 'fas fa-paper-plane' },
+  { label: 'Notifications',     href: '/notifications',      icon: 'fas fa-bell' },
+  { label: 'Users',             href: '/admin/users',        icon: 'fas fa-users' },
+  { label: 'Analytics',         href: '/admin/analytics',    icon: 'fas fa-chart-bar' },
 ];
 
-interface SidebarProps {
-  isAdmin?: boolean;
-}
-
-export default function Sidebar({ isAdmin = false }: SidebarProps) {
+export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'admin';
   const items = isAdmin ? ADMIN_NAV : USER_NAV;
 
   return (
@@ -47,12 +46,14 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
 
         <div className="nh-sidebar__spacer" />
 
-        {!isAdmin && (
-          <Link href="/" className="nh-sidebar__item nh-sidebar__item--logout">
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="nh-sidebar__item nh-sidebar__item--logout"
+          >
             <i className="fas fa-arrow-right-from-bracket" />
             Logout
-          </Link>
-        )}
+          </button>
+
       </nav>
     </aside>
   );

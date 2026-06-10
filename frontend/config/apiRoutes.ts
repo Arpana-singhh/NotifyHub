@@ -13,6 +13,10 @@ const apiRoutes = {
     detail: `${config.baseUrl}/user`,
     update: `${config.baseUrl}/user`,
   },
+  notification: {
+    list:      `${config.baseUrl}/notifications`,
+    adminList: `${config.baseUrl}/admin/notifications`,
+  },
 };
 
 export default apiRoutes;

@@ -25,7 +25,7 @@ export default function DashboardLayout({
         unreadCount={unreadCount}
       />
       <div className="dashboard-layout__body">
-        <Sidebar isAdmin={isAdmin} />
+        <Sidebar />
         <main className="main-content">{children}</main>
       </div>
     </div>

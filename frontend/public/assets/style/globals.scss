@@ -1221,3 +1221,8 @@ textarea.nh-input {
 .fw-semibold { font-weight: var(--font-weight-semibold); }
 .fs-sm { font-size: var(--font-size-sm); }
 .fs-xs { font-size: var(--font-size-xs); }
+
+.ant-pagination{
+  padding: var(--space-4) var(--space-6) !important;
+  justify-content: center;
+}

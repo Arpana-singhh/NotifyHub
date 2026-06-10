@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
+import { ConfigProvider } from "antd";
+import antdTheme from "./config/theme";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,11 +28,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AntdRegistry>
-          <SessionWrapper>
-            <DemoNav />
-            {children}
-            <ToastProvider />
-          </SessionWrapper>
+          <ConfigProvider theme={antdTheme}>
+            <SessionWrapper>
+              <DemoNav />
+              {children}
+              <ToastProvider />
+            </SessionWrapper>
+          </ConfigProvider>
         </AntdRegistry>
       </body>
     </html>
