@@ -70,7 +70,7 @@ export default function ProfilePage() {
         <div className="row g-4">
           {/* Profile Info */}
           <div className="col-12 col-md-6">
-            <div className="nh-card">
+            <div className="nh-card cmn-card">
               <div className="nh-card__header">
                 <span className="nh-card__title">Profile Info</span>
               </div>
@@ -118,7 +118,7 @@ export default function ProfilePage() {
 
           {/* Change Password */}
           <div className="col-12 col-md-6">
-            <div className="nh-card">
+            <div className="nh-card cmn-card">
               <div className="nh-card__header">
                 <span className="nh-card__title">Change password</span>
               </div>

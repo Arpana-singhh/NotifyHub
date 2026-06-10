@@ -41,8 +41,8 @@ export default function SendNotificationPage() {
 
       <div className="container-fluid px-0">
         <div className="row justify-content-start">
-          <div className="col-12 col-xl-8">
-            <div className="nh-card">
+          <div className="col-xl-8 mx-auto">
+            <div className="nh-card cmn-card">
               <div className="nh-card__body">
 
                 {sent && (
