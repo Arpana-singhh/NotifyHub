@@ -1,6 +1,3 @@
-export type AdminNotificationEntryType = ReturnType<AdminNotificationEntry['toUI']>;
-export type AdminRecipientType = ReturnType<AdminRecipient['toUI']>;
-
 export class AdminNotificationEntry {
     notificationId: string;
     title: string;
@@ -24,15 +21,12 @@ export class AdminNotificationEntry {
         this.updatedAt = raw.updatedAt ?? null;
     }
 
-    toUI() {
+    toObjectUI() {
         return {
-            notificationId: this.notificationId,
             type: this.type,
             title: this.title,
             subtitle: this.message,
             status: (this.isRead ? 'read' : 'unread') as 'read' | 'unread',
-            isRead: this.isRead,
-            isDeletedByUser: this.isDeletedByUser,
             createdAt: this.createdAt,
         };
     }
@@ -56,16 +50,6 @@ export class AdminRecipient {
         this.email = raw.email ?? '';
         this.role = raw.role ?? 'user';
         this.notifications = AdminNotificationEntry.fromApiList(raw.notifications ?? []);
-    }
-
-    toUI() {
-        return {
-            userId: this.userId,
-            name: this.name,
-            email: this.email,
-            role: this.role,
-            notifications: this.notifications.map((n) => n.toUI()),
-        };
     }
 
     static fromApiList(list: Record<string, any>[] = []): AdminRecipient[] {

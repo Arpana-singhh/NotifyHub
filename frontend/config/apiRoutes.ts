@@ -16,6 +16,7 @@ const apiRoutes = {
   notification: {
     list:      `${config.baseUrl}/notifications`,
     adminList: `${config.baseUrl}/admin/notifications`,
+    delete:    (id: string) => `${config.baseUrl}/notifications/${id}`,
   },
 };
 

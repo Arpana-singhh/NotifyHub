@@ -18,6 +18,12 @@ class NotificationService {
         });
         return AdminRecipient.fromApiList(response.data.recipients);
     }
+
+    static async deleteNotification(userNotificationId: string): Promise<void> {
+        await axios.delete(apiRoutes.notification.delete(userNotificationId), {
+            headers: { Accept: "application/json" },
+        });
+    }
 }
 
 export default NotificationService;

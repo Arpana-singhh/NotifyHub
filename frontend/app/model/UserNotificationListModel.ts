@@ -1,44 +1,46 @@
-export type UserNotificationItemType = ReturnType<UserNotificationItem['toUI']>;
+type NotificationDetail = {
+    notificationId: string;
+    title: string;
+    message: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    createdBy: string;
+    createdAt: string;
+    updatedAt: string;
+};
 
 export class UserNotificationItem {
     userNotificationId: string;
     isRead: boolean;
     isDeletedByUser: boolean;
     createdAt: string;
-    notificationId: string;
-    title: string;
-    message: string;
-    type: 'info' | 'success' | 'warning' | 'error';
-    createdBy: string;
-    notificationCreatedAt: string;
-    notificationUpdatedAt: string;
+    notification: NotificationDetail;
 
     constructor(raw: Record<string, any> = {}) {
+        const n = raw.notification ?? {};
+
         this.userNotificationId = raw.userNotificationId ?? null;
         this.isRead = raw.isRead ?? false;
         this.isDeletedByUser = raw.isDeletedByUser ?? false;
         this.createdAt = raw.createdAt ?? null;
 
-        const n = raw.notification ?? {};
-        this.notificationId = n.notificationId ?? null;
-        this.title = n.title ?? '';
-        this.message = n.message ?? '';
-        this.type = n.type ?? 'info';
-        this.createdBy = n.createdBy ?? null;
-        this.notificationCreatedAt = n.createdAt ?? null;
-        this.notificationUpdatedAt = n.updatedAt ?? null;
+        this.notification = {
+            notificationId: n.notificationId ?? null,
+            title: n.title ?? '',
+            message: n.message ?? '',
+            type: n.type ?? 'info',
+            createdBy: n.createdBy ?? null,
+            createdAt: n.createdAt ?? null,
+            updatedAt: n.updatedAt ?? null,
+        };
     }
 
-    toUI() {
+    toObjectUI() {
         return {
             userNotificationId: this.userNotificationId,
-            notificationId: this.notificationId,
-            type: this.type,
-            title: this.title,
-            subtitle: this.message,
+            type: this.notification.type,
+            title: this.notification.title,
+            subtitle: this.notification.message,
             status: (this.isRead ? 'read' : 'unread') as 'read' | 'unread',
-            isRead: this.isRead,
-            isDeletedByUser: this.isDeletedByUser,
             createdAt: this.createdAt,
         };
     }

@@ -24,6 +24,10 @@ const theme: ThemeConfig = {
             colorPrimaryHover: '#5558e8',
             borderRadius: 8,
         },
+        Collapse: {
+            colorPrimary: '#6366f1',
+            borderRadius: 8,
+        },
     },
 };
 
