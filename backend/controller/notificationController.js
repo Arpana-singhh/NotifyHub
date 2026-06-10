@@ -3,7 +3,7 @@ import notificationRecipientModel from '../models/notificationRecipientModel.js'
 import userModel from '../models/userModel.js';
 
 export const createNotification = async (req, res) => {
-    const { title, message, type, recipientType, recipientIds } = req.body;
+    const { title, message, type, recipientType, userNotificationIds } = req.body;
 
     if (!title || !message || !recipientType) {
         return res.status(400).json({ success: false, message: "title, message and recipientType are required" });
@@ -16,10 +16,10 @@ export const createNotification = async (req, res) => {
             const users = await userModel.find({ role: 'user', isBlocked: false }).select('_id');
             targetUserIds = users.map((u) => u._id);
         } else if (recipientType === 'selected') {
-            if (!recipientIds || recipientIds.length === 0) {
-                return res.status(400).json({ success: false, message: "recipientIds are required for selected type" });
+            if (!userNotificationIds || userNotificationIds.length === 0) {
+                return res.status(400).json({ success: false, message: "userNotificationIds are required for selected type" });
             }
-            targetUserIds = recipientIds;
+            targetUserIds = userNotificationIds;
         } else {
             return res.status(400).json({ success: false, message: "recipientType must be 'all' or 'selected'" });
         }
@@ -31,12 +31,12 @@ export const createNotification = async (req, res) => {
             createdBy: req.userId,
         });
 
-        const recipients = targetUserIds.map((userId) => ({
+        const records = targetUserIds.map((userId) => ({
             notificationId: notification._id,
-            recipient: userId,
+            userId,
         }));
 
-        await notificationRecipientModel.insertMany(recipients);
+        await notificationRecipientModel.insertMany(records);
 
         return res.status(201).json({
             success: true,
@@ -48,19 +48,103 @@ export const createNotification = async (req, res) => {
     }
 };
 
-export const adminDeleteNotification = async (req, res) => {
+export const adminGetDashboardStats = async (req, res) => {
     try {
-        const notification = await notificationModel.findByIdAndDelete(req.params.id);
-
-        if (!notification) {
-            return res.status(404).json({ success: false, message: "Notification not found" });
-        }
-
-        await notificationRecipientModel.deleteMany({ notificationId: req.params.id });
+        const [totalUsers, totalNotifications, readNotifications, unreadNotifications] = await Promise.all([
+            userModel.countDocuments({ role: 'user', isBlocked: false }),
+            notificationRecipientModel.countDocuments({ isDeletedByUser: false }),
+            notificationRecipientModel.countDocuments({ isRead: true, isDeletedByUser: false }),
+            notificationRecipientModel.countDocuments({ isRead: false, isDeletedByUser: false }),
+        ]);
 
         return res.status(200).json({
             success: true,
-            message: "Notification permanently deleted",
+            stats: {
+                totalUsers,
+                notifications: {
+                    total: totalNotifications,
+                    read: readNotifications,
+                    unread: unreadNotifications,
+                },
+            },
+        });
+    } catch (error) {
+        console.error("ADMIN DASHBOARD STATS ERROR:", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const adminGetAllNotifications = async (req, res) => {
+    try {
+        const records = await notificationRecipientModel
+            .find()
+            .populate('notificationId')
+            .populate('userId', 'name email role')
+            .sort({ createdAt: -1 });
+
+        const recipientMap = new Map();
+
+        for (const r of records) {
+            const user = r.userId;
+            if (!user) continue;
+
+            const uid = user._id.toString();
+
+            if (!recipientMap.has(uid)) {
+                recipientMap.set(uid, {
+                    userId: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    notifications: [],
+                });
+            }
+
+            const notif = r.notificationId;
+            if (!notif) continue;
+
+            recipientMap.get(uid).notifications.push({
+                notificationId: notif._id,
+                title: notif.title,
+                message: notif.message,
+                type: notif.type,
+                isRead: r.isRead,
+                isDeletedByUser: r.isDeletedByUser,
+                createdBy: notif.createdBy,
+                createdAt: notif.createdAt,
+                updatedAt: notif.updatedAt,
+            });
+        }
+
+        const recipients = Array.from(recipientMap.values());
+
+        return res.status(200).json({
+            success: true,
+            message: "All notifications fetched successfully",
+            total: records.length,
+            recipients,
+        });
+    } catch (error) {
+        console.error("ADMIN GET ALL NOTIFICATIONS ERROR:", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const adminDeleteNotification = async (req, res) => {
+    const { notificationIds } = req.body;
+
+    if (!notificationIds || !Array.isArray(notificationIds) || notificationIds.length === 0) {
+        return res.status(400).json({ success: false, message: "notificationIds array is required" });
+    }
+
+    try {
+        const { deletedCount } = await notificationModel.deleteMany({ _id: { $in: notificationIds } });
+        await notificationRecipientModel.deleteMany({ notificationId: { $in: notificationIds } });
+
+        return res.status(200).json({
+            success: true,
+            message: `${deletedCount} notification(s) permanently deleted`,
+            deletedNotificationIds: notificationIds,
         });
     } catch (error) {
         console.error("ADMIN DELETE NOTIFICATION ERROR:", error);
@@ -70,17 +154,25 @@ export const adminDeleteNotification = async (req, res) => {
 
 export const getNotifications = async (req, res) => {
     try {
-        const recipients = await notificationRecipientModel
-            .find({ recipient: req.userId, isDeletedByUser: false })
+        const records = await notificationRecipientModel
+            .find({ userId: req.userId, isDeletedByUser: false })
             .populate('notificationId')
             .sort({ createdAt: -1 });
 
-        const notifications = recipients.map((r) => ({
-            _id: r._id,
+        const notifications = records.map((r) => ({
+            userNotificationId: r._id,
             isRead: r.isRead,
             isDeletedByUser: r.isDeletedByUser,
             createdAt: r.createdAt,
-            notification: r.notificationId,
+            notification: {
+                notificationId: r.notificationId?._id,
+                title: r.notificationId?.title,
+                message: r.notificationId?.message,
+                type: r.notificationId?.type,
+                createdBy: r.notificationId?.createdBy,
+                createdAt: r.notificationId?.createdAt,
+                updatedAt: r.notificationId?.updatedAt,
+            },
         }));
 
         return res.status(200).json({
@@ -96,11 +188,11 @@ export const getNotifications = async (req, res) => {
 
 export const getNotificationById = async (req, res) => {
     try {
-        const recipient = await notificationRecipientModel
-            .findOne({ _id: req.params.id, recipient: req.userId, isDeletedByUser: false })
+        const record = await notificationRecipientModel
+            .findOne({ _id: req.params.id, userId: req.userId, isDeletedByUser: false })
             .populate('notificationId');
 
-        if (!recipient) {
+        if (!record) {
             return res.status(404).json({ success: false, message: "Notification not found" });
         }
 
@@ -108,11 +200,19 @@ export const getNotificationById = async (req, res) => {
             success: true,
             message: "Notification fetched successfully",
             notification: {
-                _id: recipient._id,
-                isRead: recipient.isRead,
-                isDeletedByUser: recipient.isDeletedByUser,
-                createdAt: recipient.createdAt,
-                notification: recipient.notificationId,
+                userNotificationId: record._id,
+                isRead: record.isRead,
+                isDeletedByUser: record.isDeletedByUser,
+                createdAt: record.createdAt,
+                notification: {
+                    notificationId: record.notificationId?._id,
+                    title: record.notificationId?.title,
+                    message: record.notificationId?.message,
+                    type: record.notificationId?.type,
+                    createdBy: record.notificationId?.createdBy,
+                    createdAt: record.notificationId?.createdAt,
+                    updatedAt: record.notificationId?.updatedAt,
+                },
             },
         });
     } catch (error) {
@@ -123,22 +223,22 @@ export const getNotificationById = async (req, res) => {
 
 export const markAsRead = async (req, res) => {
     try {
-        const recipient = await notificationRecipientModel.findOne({
+        const record = await notificationRecipientModel.findOne({
             _id: req.params.id,
-            recipient: req.userId,
+            userId: req.userId,
             isDeletedByUser: false,
         });
 
-        if (!recipient) {
+        if (!record) {
             return res.status(404).json({ success: false, message: "Notification not found" });
         }
 
-        if (recipient.isRead) {
+        if (record.isRead) {
             return res.status(400).json({ success: false, message: "Notification is already read" });
         }
 
-        recipient.isRead = true;
-        await recipient.save();
+        record.isRead = true;
+        await record.save();
 
         return res.status(200).json({
             success: true,
@@ -150,37 +250,39 @@ export const markAsRead = async (req, res) => {
     }
 };
 
-export const getUnreadCount = async (req, res) => {
+export const getCount = async (req, res) => {
     try {
-        const count = await notificationRecipientModel.countDocuments({
-            recipient: req.userId,
-            isRead: false,
-            isDeletedByUser: false,
-        });
+        const [total, read, unread] = await Promise.all([
+            notificationRecipientModel.countDocuments({ userId: req.userId, isDeletedByUser: false }),
+            notificationRecipientModel.countDocuments({ userId: req.userId, isRead: true, isDeletedByUser: false }),
+            notificationRecipientModel.countDocuments({ userId: req.userId, isRead: false, isDeletedByUser: false }),
+        ]);
 
         return res.status(200).json({
             success: true,
-            unreadCount: count,
+            total,
+            read,
+            unread,
         });
     } catch (error) {
-        console.error("UNREAD COUNT ERROR:", error);
+        console.error("GET COUNT ERROR:", error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };
 
 export const deleteNotification = async (req, res) => {
     try {
-        const recipient = await notificationRecipientModel.findOne({
+        const record = await notificationRecipientModel.findOne({
             _id: req.params.id,
-            recipient: req.userId,
+            userId: req.userId,
         });
 
-        if (!recipient) {
+        if (!record) {
             return res.status(404).json({ success: false, message: "Notification not found" });
         }
 
-        recipient.isDeletedByUser = true;
-        await recipient.save();
+        record.isDeletedByUser = true;
+        await record.save();
 
         return res.status(200).json({
             success: true,

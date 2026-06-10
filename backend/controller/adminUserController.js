@@ -12,7 +12,7 @@ export const getUserById = async (req, res) => {
             success: true,
             message: "User fetched successfully",
             user: {
-                _id: user._id,
+                userId: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
@@ -35,7 +35,7 @@ export const getAllUsers = async (req, res) => {
         const users = await userModel.find().select('-password');
 
         const result = users.map((user) => ({
-            _id: user._id,
+            userId: user._id,
             name: user.name,
             email: user.email,
             role: user.role,

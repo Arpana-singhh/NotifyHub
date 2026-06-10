@@ -7,7 +7,7 @@ const notificationRecipientSchema = new mongoose.Schema(
             ref: 'Notification',
             required: true,
         },
-        recipient: {
+        userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
@@ -26,8 +26,8 @@ const notificationRecipientSchema = new mongoose.Schema(
     }
 );
 
-notificationRecipientSchema.index({ recipient: 1, isDeletedByUser: 1 });
-notificationRecipientSchema.index({ recipient: 1, isRead: 1 });
+notificationRecipientSchema.index({ userId: 1, isDeletedByUser: 1 });
+notificationRecipientSchema.index({ userId: 1, isRead: 1 });
 notificationRecipientSchema.index({ notificationId: 1 });
 
 const notificationRecipientModel =
