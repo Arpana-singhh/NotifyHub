@@ -6,7 +6,6 @@ interface DashboardLayoutProps {
   isAdmin?: boolean;
   userName?: string;
   userInitials?: string;
-  unreadCount?: number;
 }
 
 export default function DashboardLayout({
@@ -14,7 +13,6 @@ export default function DashboardLayout({
   isAdmin = false,
   userName,
   userInitials,
-  unreadCount,
 }: DashboardLayoutProps) {
   return (
     <div className="dashboard-layout">
@@ -22,7 +20,6 @@ export default function DashboardLayout({
         isAdmin={isAdmin}
         userName={userName}
         userInitials={userInitials}
-        unreadCount={unreadCount}
       />
       <div className="dashboard-layout__body">
         <Sidebar />

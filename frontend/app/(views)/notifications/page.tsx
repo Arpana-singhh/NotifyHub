@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Input, Select, Spin } from 'antd';
+import { Input, Select, Spin, Button } from 'antd';
 import { useSession } from 'next-auth/react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import AdminNotificationListing from '../../components/common/AdminNotificationListing';
@@ -20,7 +20,7 @@ export default function NotificationsPage() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [userFilter, setUserFilter] = useState('all');
 
-    const { notifications, recipients, isUserLoading, isAdminLoading, fetchUserNotifications, fetchAdminNotifications, deleteNotification, deleteAdminNotification, deleteAdminUserNotification } = useNotificationStore();
+    const { notifications, recipients, isUserLoading, isAdminLoading, fetchUserNotifications, fetchAdminNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAdminNotification, deleteAdminUserNotification } = useNotificationStore();
 
     useEffect(() => {
         if (status !== 'authenticated') return;
@@ -36,7 +36,7 @@ export default function NotificationsPage() {
     ];
 
     return (
-        <DashboardLayout userInitials="JS" unreadCount={5}>
+        <DashboardLayout>
             <div className="main-content__header">
                 <h1 className="main-content__title">
                     {isAdmin ? 'All Notifications' : 'My Notifications'}
@@ -83,6 +83,11 @@ export default function NotificationsPage() {
                         options={userFilterOptions}
                     />
                 )}
+                {!isAdmin && notifications.some((n) => n.status === 'unread') && (
+                    <Button onClick={markAllAsRead}>
+                        <i className="fas fa-check-double" /> Mark all read
+                    </Button>
+                )}
             </div>
 
             {/* Notifications list */}
@@ -108,6 +113,7 @@ export default function NotificationsPage() {
                         pageSize={PAGE_SIZE}
                         onPageChange={setCurrentPage}
                         onDelete={deleteNotification}
+                        onMarkRead={markAsRead}
                         searchQuery={searchQuery}
                         typeFilter={typeFilter}
                         statusFilter={statusFilter}

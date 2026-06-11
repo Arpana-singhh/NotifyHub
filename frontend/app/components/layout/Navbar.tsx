@@ -4,28 +4,30 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Avatar from '../common/Avatar';
 import { useUserStore } from '@/app/store/userStore';
+import { useNotificationStore } from '@/app/store/notificationStore';
 
 interface NavbarProps {
   isAdmin?: boolean;
   userName?: string;
   userInitials?: string;
-  unreadCount?: number;
 }
 
 export default function Navbar({
   isAdmin = false,
   userName,
   userInitials = 'JS',
-  unreadCount = 0,
 }: NavbarProps) {
   const { user, fetchUser } = useUserStore();
+  const { notifications, fetchUserNotifications } = useNotificationStore();
 
   useEffect(() => {
     fetchUser();
-  }, []);
+    if (!isAdmin) fetchUserNotifications();
+  }, [isAdmin]);
 
   const displayName = user?.name || userName;
   const initials = user?.name ? user.name.charAt(0).toUpperCase() : userInitials;
+  const unreadCount = notifications.filter((n) => n.status === 'unread').length;
 
   return (
     <header className="nh-navbar">

@@ -24,7 +24,7 @@ export default function DashboardPage() {
     .slice(0, 4);
 
   return (
-    <DashboardLayout unreadCount={unread}>
+    <DashboardLayout>
       <div className="main-content__header">
         <h1 className="main-content__title">My Dashboard</h1>
         <div className="live-status">

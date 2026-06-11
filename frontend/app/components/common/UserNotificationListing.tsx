@@ -19,6 +19,7 @@ export type UserNotification = {
 
 interface NotificationRowProps extends UserNotification {
     onDelete: (id: string) => void;
+    onMarkRead: (id: string) => void;
 }
 
 interface UserNotificationListingProps {
@@ -27,12 +28,13 @@ interface UserNotificationListingProps {
     pageSize: number;
     onPageChange: (page: number) => void;
     onDelete: (userNotificationId: string) => void;
+    onMarkRead: (userNotificationId: string) => void;
     searchQuery?: string;
     typeFilter?: string;
     statusFilter?: string;
 }
 
-function NotificationRow({ userNotificationId, type, title, subtitle, status, onDelete }: NotificationRowProps) {
+function NotificationRow({ userNotificationId, type, title, subtitle, status, onDelete, onMarkRead }: NotificationRowProps) {
     const [open, setOpen] = useState(false);
     const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
 
@@ -41,8 +43,16 @@ function NotificationRow({ userNotificationId, type, title, subtitle, status, on
         onDelete(userNotificationId);
     };
 
+    const handleRowClick = () => {
+        if (status === 'unread') onMarkRead(userNotificationId);
+    };
+
     return (
-        <div className="notif-item">
+        <div
+            className={`notif-item${status === 'unread' ? ' notif-item--unread' : ''}`}
+            onClick={handleRowClick}
+            style={status === 'unread' ? { cursor: 'pointer' } : undefined}
+        >
             <span className={`notif-item__dot notif-item__dot--${type}`} />
             <div className="notif-item__body">
                 <div className="notif-item__title">{title}</div>
@@ -58,7 +68,7 @@ function NotificationRow({ userNotificationId, type, title, subtitle, status, on
                     danger
                     icon={<i className="fas fa-trash-can" />}
                     aria-label="Delete"
-                    onClick={() => setOpen(true)}
+                    onClick={(e) => { e.stopPropagation(); setOpen(true); }}
                 />
                 <ConfirmModal
                     open={open}
@@ -79,6 +89,7 @@ export default function UserNotificationListing({
     pageSize,
     onPageChange,
     onDelete,
+    onMarkRead,
     searchQuery = '',
     typeFilter = 'all',
     statusFilter = 'all',
@@ -104,7 +115,7 @@ export default function UserNotificationListing({
     return (
         <>
             {paginated.map((n) => (
-                <NotificationRow key={n.userNotificationId} {...n} onDelete={onDelete} />
+                <NotificationRow key={n.userNotificationId} {...n} onDelete={onDelete} onMarkRead={onMarkRead} />
             ))}
             {filtered.length > pageSize && (
                 <Pagination

@@ -1,5 +1,11 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Spin } from 'antd';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import StatCard from '../../components/common/StatCard';
+import { useNotificationStore } from '@/app/store/notificationStore';
+import Badge from '@/app/components/common/Badge';
 
 const BAR_DAYS = [
   { label: 'Mon', height: 35, active: false },
@@ -11,14 +17,27 @@ const BAR_DAYS = [
   { label: 'Sun', height: 100, active: true },
 ];
 
-const READ_RATES = [
-  { label: 'Info',    pct: 82, variant: 'info' },
-  { label: 'Success', pct: 91, variant: 'success' },
-  { label: 'Warning', pct: 74, variant: 'warning' },
-  { label: 'Error',   pct: 95, variant: 'error' },
-];
-
 export default function AdminDashboardPage() {
+  const { dashboardStats, isStatsLoading, fetchDashboardStats ,fetchAdminNotifications} = useNotificationStore();
+  const [animatedWidths, setAnimatedWidths] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetchAdminNotifications();
+    fetchDashboardStats();
+  }, [fetchAdminNotifications, fetchDashboardStats]);
+
+  // Trigger animation: start at 0, then set real values on next frame
+  useEffect(() => {
+    if (!dashboardStats?.byType?.length) return;
+    setAnimatedWidths({});
+    const frame = requestAnimationFrame(() => {
+      const widths: Record<string, number> = {};
+      dashboardStats.byType.forEach((r) => { widths[r.type] = r.readPercent; });
+      setAnimatedWidths(widths);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [dashboardStats]);
+
   return (
     <DashboardLayout isAdmin userName="Admin User" userInitials="AU">
       <div className="main-content__header">
@@ -27,20 +46,44 @@ export default function AdminDashboardPage() {
 
       {/* Stats row */}
       <div className="container-fluid px-0 mb-4">
-        <div className="row g-3">
-          <div className="col-6 col-lg-3">
-            <StatCard label="Total Users" value="142" sub="+12 this week" />
+        {isStatsLoading ? (
+          <div className="d-flex justify-content-center py-4">
+            <Spin size="large" />
           </div>
-          <div className="col-6 col-lg-3">
-            <StatCard label="Notifications" value="1,284" sub="Sent all time" />
+        ) : (
+          <div className="row g-3">
+            <div className="col-6 col-lg-3">
+              <StatCard
+                label="Total Users"
+                value={dashboardStats?.totalUsers ?? '—'}
+                sub="Active, non-admin"
+              />
+            </div>
+            <div className="col-6 col-lg-3">
+              <StatCard
+                label="Notifications"
+                value={dashboardStats?.totalNotifications.toLocaleString() ?? '—'}
+                sub="Sent all time"
+              />
+            </div>
+            <div className="col-6 col-lg-3">
+              <StatCard
+                label="Read"
+                value={dashboardStats?.readNotifications.toLocaleString() ?? '—'}
+                sub={`${dashboardStats?.readRate ?? 0}% read rate`}
+                valueVariant="success"
+              />
+            </div>
+            <div className="col-6 col-lg-3">
+              <StatCard
+                label="Unread"
+                value={dashboardStats?.unreadNotifications.toLocaleString() ?? '—'}
+                sub="Pending"
+                valueVariant="primary"
+              />
+            </div>
           </div>
-          <div className="col-6 col-lg-3">
-            <StatCard label="Read" value="987" sub="76.9% read rate" valueVariant="success" />
-          </div>
-          <div className="col-6 col-lg-3">
-            <StatCard label="Unread" value="297" sub="Pending" valueVariant="primary" />
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Charts row */}
@@ -68,27 +111,28 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Progress bars */}
+          {/* Read rate by type */}
           <div className="col-12 col-lg-6">
             <div className="nh-card">
               <div className="nh-card__header">
                 <span className="nh-card__title">Read rate by type</span>
               </div>
               <div className="nh-card__body">
-                {READ_RATES.map((r) => (
-                  <div key={r.label} className="progress-stat">
-                    <div className="progress-stat__header">
-                      <span className="progress-stat__label">{r.label}</span>
-                      <span className="progress-stat__pct">{r.pct}%</span>
-                    </div>
+                {(dashboardStats?.byType ?? []).map((r) => (
+                  <div key={r.type} className="progress-stat progress-stat--inline">
+                    <Badge variant={r.type}>{r.type.charAt(0).toUpperCase() + r.type.slice(1)}</Badge>
                     <div className="progress-stat__track">
                       <div
-                        className={`progress-stat__fill progress-stat__fill--${r.variant}`}
-                        style={{ width: `${r.pct}%` }}
+                        className={`progress-stat__fill progress-stat__fill--${r.type}`}
+                        style={{ width: `${animatedWidths[r.type] ?? 0}%` }}
                       />
                     </div>
+                    <span className="progress-stat__pct">{r.readPercent}%</span>
                   </div>
                 ))}
+                {!isStatsLoading && !dashboardStats?.byType?.length && (
+                  <div className="text-center text-muted py-3">No data yet</div>
+                )}
               </div>
             </div>
           </div>

@@ -3,16 +3,19 @@ import NotificationService from '../service/api/notification.services';
 import { TTLMap } from '../utils/TTLMap';
 import type { AdminRecipient } from '../model/AdminNotificationListModel';
 import type { UserNotification } from '../components/common/UserNotificationListing';
+import type { DashboardStatsModel } from '../model/DashboardStatsModel';
 
 /* ------------------------------------------------------------------ */
 /* TTL CACHES (module-level, shared across store instances)             */
 /* ------------------------------------------------------------------ */
 
-const userNotifCache = new TTLMap<string, UserNotification[]>(5 * 60 * 1000);  // 5 min
+const userNotifCache  = new TTLMap<string, UserNotification[]>(5 * 60 * 1000);
 const adminNotifCache = new TTLMap<string, AdminRecipient[]>(5 * 60 * 1000);
+const statsCache      = new TTLMap<string, DashboardStatsModel>(5 * 60 * 1000);
 
 const USER_CACHE_KEY = 'user-notifications';
 const ADMIN_CACHE_KEY = 'admin-notifications';
+const STATS_CACHE_KEY = 'admin-dashboard-stats';
 
 /* ------------------------------------------------------------------ */
 /* STORE TYPES                                                         */
@@ -21,12 +24,17 @@ const ADMIN_CACHE_KEY = 'admin-notifications';
 interface NotificationState {
     notifications: UserNotification[];
     recipients: AdminRecipient[];
+    dashboardStats: DashboardStatsModel | null;
 
     isUserLoading: boolean;
     isAdminLoading: boolean;
+    isStatsLoading: boolean;
 
     fetchUserNotifications: (force?: boolean) => Promise<void>;
     fetchAdminNotifications: (force?: boolean) => Promise<void>;
+    fetchDashboardStats: (force?: boolean) => Promise<void>;
+    markAsRead: (userNotificationId: string) => Promise<void>;
+    markAllAsRead: () => Promise<void>;
     deleteNotification: (userNotificationId: string) => Promise<void>;
     deleteAdminNotification: (notificationId: string) => Promise<void>;
     deleteAdminUserNotification: (userId: string, notificationId: string) => Promise<void>;
@@ -41,9 +49,11 @@ interface NotificationState {
 export const useNotificationStore = create<NotificationState>((set, get) => ({
     notifications: [],
     recipients: [],
+    dashboardStats: null,
 
     isUserLoading: false,
     isAdminLoading: false,
+    isStatsLoading: false,
 
     /* ---------------- FETCH USER NOTIFICATIONS ---------------- */
 
@@ -92,6 +102,44 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         }
     },
 
+    /* ---------------- FETCH DASHBOARD STATS (ADMIN) ---------------- */
+
+    fetchDashboardStats: async (force = false) => {
+        if (!force) {
+            const cached = statsCache.get(STATS_CACHE_KEY);
+            if (cached) { set({ dashboardStats: cached }); return; }
+        }
+        if (get().isStatsLoading) return;
+        set({ isStatsLoading: true });
+        try {
+            const stats = await NotificationService.getDashboardStats();
+            statsCache.set(STATS_CACHE_KEY, stats);
+            set({ dashboardStats: stats });
+        } catch {
+            set({ dashboardStats: null });
+        } finally {
+            set({ isStatsLoading: false });
+        }
+    },
+
+    /* ---------------- MARK AS READ ---------------- */
+
+    markAsRead: async (userNotificationId: string) => {
+        await NotificationService.markAsRead(userNotificationId);
+        const updated = get().notifications.map((n) =>
+            n.userNotificationId === userNotificationId ? { ...n, status: 'read' as const } : n
+        );
+        userNotifCache.set(USER_CACHE_KEY, updated);
+        set({ notifications: updated });
+    },
+
+    markAllAsRead: async () => {
+        await NotificationService.markAllAsRead();
+        const updated = get().notifications.map((n) => ({ ...n, status: 'read' as const }));
+        userNotifCache.set(USER_CACHE_KEY, updated);
+        set({ notifications: updated });
+    },
+
     /* ---------------- DELETE NOTIFICATION (user only) ---------------- */
 
     deleteNotification: async (userNotificationId: string) => {
@@ -135,6 +183,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     reset: () => {
         userNotifCache.clear();
         adminNotifCache.clear();
-        set({ notifications: [], recipients: [], isUserLoading: false, isAdminLoading: false });
+        statsCache.clear();
+        set({ notifications: [], recipients: [], dashboardStats: null, isUserLoading: false, isAdminLoading: false, isStatsLoading: false });
     },
 }));

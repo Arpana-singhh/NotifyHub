@@ -50,21 +50,76 @@ export const createNotification = async (req, res) => {
 
 export const adminGetDashboardStats = async (req, res) => {
     try {
-        const [totalUsers, totalNotifications, readNotifications, unreadNotifications] = await Promise.all([
+        const TYPES = ['info', 'success', 'warning', 'error'];
+
+        const [totalUsers, notifStats, typeAgg] = await Promise.all([
+            // Active non-admin users
             userModel.countDocuments({ role: 'user', isBlocked: false }),
-            notificationRecipientModel.countDocuments({ isDeletedByUser: false }),
-            notificationRecipientModel.countDocuments({ isRead: true, isDeletedByUser: false }),
-            notificationRecipientModel.countDocuments({ isRead: false, isDeletedByUser: false }),
+
+            // Total / read / unread delivery counts
+            notificationRecipientModel.aggregate([
+                { $match: { isDeletedByUser: false } },
+                {
+                    $group: {
+                        _id: null,
+                        total:  { $sum: 1 },
+                        read:   { $sum: { $cond: ['$isRead', 1, 0] } },
+                        unread: { $sum: { $cond: ['$isRead', 0, 1] } },
+                    },
+                },
+            ]),
+
+            // Per-type delivery counts (join recipients → notifications to get type)
+            notificationRecipientModel.aggregate([
+                { $match: { isDeletedByUser: false } },
+                {
+                    $lookup: {
+                        from: 'notifications',
+                        localField: 'notificationId',
+                        foreignField: '_id',
+                        as: 'notification',
+                    },
+                },
+                { $unwind: '$notification' },
+                {
+                    $group: {
+                        _id: '$notification.type',
+                        count: { $sum: 1 },
+                        read:  { $sum: { $cond: ['$isRead', 1, 0] } },
+                    },
+                },
+            ]),
         ]);
+
+        const counts = notifStats[0] ?? { total: 0, read: 0, unread: 0 };
+
+        // Build a map keyed by type so missing types default to 0
+        const typeMap = Object.fromEntries(TYPES.map((t) => [t, { count: 0, read: 0 }]));
+        for (const row of typeAgg) {
+            if (typeMap[row._id] !== undefined) {
+                typeMap[row._id] = { count: row.count, read: row.read };
+            }
+        }
+
+        const byType = TYPES.map((type) => {
+            const { count, read } = typeMap[type];
+            return {
+                type,
+                count,
+                readCount: read,
+                readPercent: count > 0 ? Math.round((read / count) * 100) : 0,
+            };
+        });
 
         return res.status(200).json({
             success: true,
             stats: {
                 totalUsers,
                 notifications: {
-                    total: totalNotifications,
-                    read: readNotifications,
-                    unread: unreadNotifications,
+                    total:  counts.total,
+                    read:   counts.read,
+                    unread: counts.unread,
+                    byType,
                 },
             },
         });
@@ -316,6 +371,23 @@ export const deleteNotification = async (req, res) => {
         });
     } catch (error) {
         console.error("DELETE NOTIFICATION ERROR:", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const markAllAsRead = async (req, res) => {
+    try {
+        await notificationRecipientModel.updateMany(
+            { userId: req.userId, isRead: false, isDeletedByUser: false },
+            { $set: { isRead: true } }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "All notifications marked as read",
+        });
+    } catch (error) {
+        console.error("MARK ALL AS READ ERROR:", error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };

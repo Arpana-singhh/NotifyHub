@@ -55,7 +55,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <DashboardLayout userInitials={user?.name ? user.name.charAt(0).toUpperCase() : '?'} unreadCount={5}>
+    <DashboardLayout userInitials={user?.name ? user.name.charAt(0).toUpperCase() : '?'}>
       <div className="main-content__header">
         <h1 className="main-content__title">My Profile</h1>
       </div>

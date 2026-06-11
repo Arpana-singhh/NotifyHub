@@ -1145,6 +1145,17 @@ textarea.nh-input {
     color: var(--color-text-primary);
   }
 
+  &--inline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    .progress-stat__track {
+      flex: 1;
+      margin-bottom: 0;
+    }
+  }
+
   &__track {
     height: 8px;
     background-color: var(--color-border);
@@ -1155,7 +1166,7 @@ textarea.nh-input {
   &__fill {
     height: 100%;
     border-radius: var(--radius-full);
-    transition: width var(--transition-slow);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 
     &--info    { background-color: var(--color-info); }
     &--success { background-color: var(--color-success); }

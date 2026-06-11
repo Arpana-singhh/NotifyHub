@@ -3,6 +3,7 @@ import apiRoutes from "@/config/apiRoutes";
 import "../apiClient";
 import { UserNotificationItem } from "@/app/model/UserNotificationListModel";
 import { AdminRecipient } from "@/app/model/AdminNotificationListModel";
+import { DashboardStatsModel } from "@/app/model/DashboardStatsModel";
 
 class NotificationService {
     static async getUserNotifications(): Promise<UserNotificationItem[]> {
@@ -17,6 +18,25 @@ class NotificationService {
             headers: { Accept: "application/json" },
         });
         return AdminRecipient.fromApiList(response.data.recipients);
+    }
+
+    static async getDashboardStats(): Promise<DashboardStatsModel> {
+        const response = await axios.get(apiRoutes.notification.stats, {
+            headers: { Accept: "application/json" },
+        });
+        return new DashboardStatsModel(response.data);
+    }
+
+    static async markAsRead(userNotificationId: string): Promise<void> {
+        await axios.patch(apiRoutes.notification.markRead(userNotificationId), {}, {
+            headers: { Accept: "application/json" },
+        });
+    }
+
+    static async markAllAsRead(): Promise<void> {
+        await axios.patch(apiRoutes.notification.markAllRead, {}, {
+            headers: { Accept: "application/json" },
+        });
     }
 
     static async deleteNotification(userNotificationId: string): Promise<void> {
