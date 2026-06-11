@@ -61,7 +61,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="container-fluid px-0">
-        <div className="row g-4">
+        <div className="row g-4 align-items-stretch">
           {/* Profile Info */}
           <div className="col-12 col-md-6">
             <div className="nh-card cmn-card">
@@ -105,7 +105,7 @@ export default function ProfilePage() {
                 </div>
 
                 <button
-                  className="nh-btn nh-btn--secondary nh-btn--full mt-2"
+                  className="nh-btn nh-btn--primary nh-btn--full mt-2"
                   onClick={handleSaveProfile}
                   disabled={isSaving}
                 >
@@ -117,7 +117,7 @@ export default function ProfilePage() {
 
           {/* Change Password */}
           <div className="col-12 col-md-6">
-            <div className="nh-card cmn-card">
+            <div className="nh-card cmn-card h-100 change-password">
               <div className="nh-card__header">
                 <span className="nh-card__title">Change password</span>
               </div>
@@ -156,7 +156,7 @@ export default function ProfilePage() {
                 </div>
 
                 <button
-                  className="nh-btn nh-btn--danger nh-btn--full mt-2"
+                  className="nh-btn nh-btn--danger nh-btn--full"
                   onClick={handleChangePassword}
                   disabled={changingPassword}
                 >

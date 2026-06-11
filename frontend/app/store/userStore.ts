@@ -3,15 +3,17 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import UserService from '../service/api/user.services';
 import { TTLMap } from '../utils/TTLMap';
-import type { UserProfileModel } from '../model/UserModel';
+import type { UserProfileModel, UserListItem } from '../model/UserModel';
 
 /* ------------------------------------------------------------------ */
 /* TTL CACHE                                                           */
 /* ------------------------------------------------------------------ */
 
 const userCache = new TTLMap<string, UserProfileModel>(5 * 60 * 1000); // 5 min
+const usersListCache = new TTLMap<string, UserListItem[]>(5 * 60 * 1000); // 5 min
 
 const USER_CACHE_KEY = 'user-profile';
+const USERS_LIST_CACHE_KEY = 'admin-users-list';
 
 /* ------------------------------------------------------------------ */
 /* TYPES                                                               */
@@ -19,11 +21,15 @@ const USER_CACHE_KEY = 'user-profile';
 
 interface UserState {
     user: UserProfileModel | null;
+    users: UserListItem[];
     isLoading: boolean;
     isSaving: boolean;
+    isLoadingUsers: boolean;
 
     fetchUser: (force?: boolean) => Promise<void>;
     updateUser: (name: string, avatar?: string) => Promise<void>;
+    fetchAllUserByAdmin: (force?: boolean) => Promise<void>;
+    toggleBlock: (userId: string) => Promise<void>;
     reset: () => void;
 }
 
@@ -33,8 +39,10 @@ interface UserState {
 
 export const useUserStore = create<UserState>((set, get) => ({
     user: null,
+    users: [],
     isLoading: false,
     isSaving: false,
+    isLoadingUsers: false,
 
     /* ---------------- FETCH USER ---------------- */
 
@@ -84,10 +92,60 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
     },
 
+    /* ---------------- FETCH ALL USERS (ADMIN) ---------------- */
+
+    fetchAllUserByAdmin: async (force = false) => {
+        if (!force) {
+            const cached = usersListCache.get(USERS_LIST_CACHE_KEY);
+            if (cached) {
+                set({ users: cached });
+                return;
+            }
+        }
+
+        if (get().isLoadingUsers) return; // a fetch is already in flight
+
+        set({ isLoadingUsers: true });
+        try {
+            const users = await UserService.getAllUsers();
+            usersListCache.set(USERS_LIST_CACHE_KEY, users);
+            set({ users });
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message?: string }>;
+            toast.error(axiosError.response?.data?.message || 'Failed to load users');
+            set({ users: [] });
+        } finally {
+            set({ isLoadingUsers: false });
+        }
+    },
+
+    /* ---------------- TOGGLE BLOCK (ADMIN) ---------------- */
+
+    toggleBlock: async (userId: string) => {
+        try {
+            const { isBlocked, message } = await UserService.toggleBlock(userId);
+
+            const users = get().users.map((u) => {
+                if (u.userId !== userId) return u;
+                u.isBlocked = isBlocked;
+                u.status = isBlocked ? 'Blocked' : 'Active';
+                return u;
+            });
+
+            usersListCache.set(USERS_LIST_CACHE_KEY, users);
+            set({ users });
+            toast.success(message || 'User updated successfully');
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message?: string }>;
+            toast.error(axiosError.response?.data?.message || 'Failed to update user');
+        }
+    },
+
     /* ---------------- RESET ---------------- */
 
     reset: () => {
         userCache.clear();
-        set({ user: null, isLoading: false, isSaving: false });
+        usersListCache.clear();
+        set({ user: null, users: [], isLoading: false, isSaving: false, isLoadingUsers: false });
     },
 }));

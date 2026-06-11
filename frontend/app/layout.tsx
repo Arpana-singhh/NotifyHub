@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AntdRegistry>
           <ConfigProvider theme={antdTheme}>
             <SessionWrapper>
-              <DemoNav />
+              {/* <DemoNav /> */}
               {children}
               <ToastProvider />
             </SessionWrapper>

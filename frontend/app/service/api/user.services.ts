@@ -22,11 +22,21 @@ class UserService {
         });
     }
 
-    static async getUsers(): Promise<UserListItem[]> {
+    static async getAllUsers(): Promise<UserListItem[]> {
         const res = await axios.get(apiRoutes.user.list, {
             headers: { Accept: "application/json" },
         });
         return UserListItem.fromApiList(res.data.users ?? []);
+    }
+    
+    static async toggleBlock(userId: string): Promise<{ isBlocked: boolean; message: string }> {
+        const res = await axios.patch(apiRoutes.user.block(userId), {}, {
+            headers: { Accept: "application/json" },
+        });
+        return {
+            isBlocked: res.data.isBlocked ?? false,
+            message: res.data.message ?? '',
+        };
     }
 }
 

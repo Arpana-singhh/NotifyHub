@@ -1,37 +1,30 @@
+'use client';
+
+import { useEffect } from 'react';
+import { Spin } from 'antd';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import StatCard from '../../components/common/StatCard';
 import NotificationItem from '../../components/common/NotificationItem';
-
-const RECENT_NOTIFICATIONS = [
-  {
-    type: 'info' as const,
-    title: 'System update scheduled',
-    subtitle: 'Maintenance window on Sunday 2–4 AM UTC',
-    time: '2 min ago',
-  },
-  {
-    type: 'success' as const,
-    title: 'Your report is ready',
-    subtitle: 'The Q3 analytics report has been generated',
-    time: '15 min ago',
-  },
-  {
-    type: 'warning' as const,
-    title: 'Storage usage high',
-    subtitle: 'You\'re using 87% of your storage quota',
-    time: '1 hr ago',
-  },
-  {
-    type: 'error' as const,
-    title: 'Login from new device',
-    subtitle: 'Unrecognized login from Chrome on Windows',
-    time: '3 hrs ago',
-  },
-];
+import { useNotificationStore } from '@/app/store/notificationStore';
+import { timeAgo } from '@/app/utils/helper';
 
 export default function DashboardPage() {
+  const { notifications, isUserLoading, fetchUserNotifications } = useNotificationStore();
+
+  useEffect(() => {
+    fetchUserNotifications();
+  }, []);
+
+  const total = notifications.length;
+  const unread = notifications.filter((n) => n.status === 'unread').length;
+  const read = total - unread;
+
+  const recent = [...notifications]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 4);
+
   return (
-    <DashboardLayout userInitials="JS" unreadCount={5}>
+    <DashboardLayout unreadCount={unread}>
       <div className="main-content__header">
         <h1 className="main-content__title">My Dashboard</h1>
         <div className="live-status">
@@ -44,13 +37,13 @@ export default function DashboardPage() {
       <div className="container-fluid px-0 mb-4">
         <div className="row g-3">
           <div className="col-12 col-sm-4">
-            <StatCard label="Total" value={24} sub="All notifications" />
+            <StatCard label="Total" value={total} sub="All notifications" />
           </div>
           <div className="col-12 col-sm-4">
-            <StatCard label="Unread" value={5} sub="Need attention" valueVariant="primary" />
+            <StatCard label="Unread" value={unread} sub="Need attention" valueVariant="primary" />
           </div>
           <div className="col-12 col-sm-4">
-            <StatCard label="Read" value={19} sub="All caught up" valueVariant="success" />
+            <StatCard label="Read" value={read} sub="All caught up" valueVariant="success" />
           </div>
         </div>
       </div>
@@ -60,8 +53,26 @@ export default function DashboardPage() {
         <div className="nh-card__header">
           <span className="nh-card__title">Recent notifications</span>
         </div>
-        {RECENT_NOTIFICATIONS.map((n, i) => (
-          <NotificationItem key={i} showTime {...n} />
+
+        {isUserLoading && (
+          <div className="d-flex justify-content-center py-5">
+            <Spin size="large" />
+          </div>
+        )}
+
+        {!isUserLoading && recent.length === 0 && (
+          <div className="text-center text-muted py-5">No notifications yet</div>
+        )}
+
+        {!isUserLoading && recent.map((n) => (
+          <NotificationItem
+            key={n.userNotificationId}
+            showTime
+            type={n.type}
+            title={n.title}
+            subtitle={n.subtitle}
+            time={timeAgo(n.createdAt)}
+          />
         ))}
       </div>
     </DashboardLayout>

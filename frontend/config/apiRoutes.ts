@@ -13,6 +13,7 @@ const apiRoutes = {
     detail: `${config.baseUrl}/user`,
     update: `${config.baseUrl}/user`,
     list:   `${config.baseUrl}/admin/users`,
+    block:   (id: string) => `${config.baseUrl}/admin/users/${id}/block`,
   },
   notification: {
     list:      `${config.baseUrl}/notifications`,
