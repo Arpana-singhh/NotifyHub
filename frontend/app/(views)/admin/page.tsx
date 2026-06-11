@@ -6,6 +6,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import StatCard from '../../components/common/StatCard';
 import { useNotificationStore } from '@/app/store/notificationStore';
 import Badge from '@/app/components/common/Badge';
+import { useSession } from 'next-auth/react';
 
 const BAR_DAYS = [
   { label: 'Mon', height: 35, active: false },
@@ -18,13 +19,18 @@ const BAR_DAYS = [
 ];
 
 export default function AdminDashboardPage() {
+  const { data: session, status } = useSession();
+  const isAdmin = session?.user?.role === 'admin';
   const { dashboardStats, isStatsLoading, fetchDashboardStats ,fetchAdminNotifications} = useNotificationStore();
   const [animatedWidths, setAnimatedWidths] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    fetchAdminNotifications();
-    fetchDashboardStats();
-  }, [fetchAdminNotifications, fetchDashboardStats]);
+    if (status !== 'authenticated') return;
+    if (isAdmin) {
+      fetchAdminNotifications();
+      fetchDashboardStats();
+    }
+}, [status, isAdmin]);
 
   // Trigger animation: start at 0, then set real values on next frame
   useEffect(() => {

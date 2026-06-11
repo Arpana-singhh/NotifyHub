@@ -2175,3 +2175,13 @@ textarea.nh-input {
     margin-top:auto;
   }
 }
+
+.recipient-select-button{
+  display:flex;
+  gap:0.5rem;
+  .recipient-option{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+  }
+}

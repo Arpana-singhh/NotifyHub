@@ -1,7 +1,9 @@
 'use client';
 
 import DashboardLayout from '@/app/components/layout/DashboardLayout';
-import { useState } from 'react';
+import { useUserStore } from '@/app/store/userStore';
+import { Button } from 'antd';
+import { useEffect, useState } from 'react';
 
 type NotifType = 'info' | 'success' | 'warning' | 'error';
 type RecipientMode = 'all' | 'select';
@@ -19,6 +21,11 @@ export default function SendNotificationPage() {
   const [type, setType]           = useState<NotifType>('info');
   const [recipient, setRecipient] = useState<RecipientMode>('all');
   const [sent, setSent]           = useState(false);
+  const { users, isLoadingUsers, fetchAllUserByAdmin, toggleBlock } = useUserStore();
+
+  useEffect(() => {
+    fetchAllUserByAdmin();
+  }, []);
 
   function handleSend() {
     if (!title.trim() || !message.trim()) return;
@@ -81,7 +88,7 @@ export default function SendNotificationPage() {
                 {/* Type & Recipients row */}
                 <div className="container-fluid px-0">
                   <div className="row g-4">
-                    <div className="col-12 col-md-6">
+                    <div className="col-12">
                       <div className="form-group mb-0">
                         <label>Notification type</label>
                         <div className="type-selector">
@@ -100,30 +107,33 @@ export default function SendNotificationPage() {
                       </div>
                     </div>
 
-                    <div className="col-12 col-md-6">
+                    <div className="col-12">
                       <div className="form-group mb-0">
                         <label>Recipients</label>
-                        <button
-                          type="button"
-                          className={`recipient-option${recipient === 'all' ? ' recipient-option--active' : ''}`}
-                          onClick={() => setRecipient('all')}
-                        >
-                          <span>
-                            <i className="fas fa-users me-2" />
-                            All users
-                          </span>
-                          <span className="recipient-option__count">142</span>
-                        </button>
-                        <button
-                          type="button"
-                          className={`recipient-option${recipient === 'select' ? ' recipient-option--active' : ''}`}
-                          onClick={() => setRecipient('select')}
-                        >
-                          <span>
-                            <i className="fas fa-user me-2" />
-                            Select users
-                          </span>
-                        </button>
+                        <div className="recipient-select-button">
+                          <Button
+                            type="default"
+                            className={`recipient-option${recipient === 'all' ? ' recipient-option--active' : ''}`}
+                            onClick={() => setRecipient('all')}
+                          >
+                            <span>
+                              <i className="fas fa-users me-2" />
+                              All users
+                            </span>
+                            <span className="recipient-option__count">142</span>
+                          </Button>
+
+                          <Button
+                            type="default"
+                            className={`recipient-option${recipient === 'select' ? ' recipient-option--active' : ''}`}
+                            onClick={() => setRecipient('select')}
+                          >
+                            <span>
+                              <i className="fas fa-user me-2" />
+                              Select users
+                            </span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>

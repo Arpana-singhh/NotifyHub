@@ -6,7 +6,7 @@ import { Input, Checkbox } from 'antd';
 import AuthLayout from '../components/layout/AuthLayout';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn,  getSession } from 'next-auth/react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,8 +20,16 @@ export default function LoginPage() {
 
     if (result?.error) {
       toast.error("Invalid email or password");
+      return;
+    }
+  
+    const session = await getSession();
+  
+    toast.success("Login successful");
+  
+    if (session?.user?.role === "admin") {
+      router.push("/admin");
     } else {
-      toast.success("Login successful");
       router.push("/dashboard");
     }
   }
