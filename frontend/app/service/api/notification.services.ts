@@ -24,6 +24,20 @@ class NotificationService {
             headers: { Accept: "application/json" },
         });
     }
+
+    static async deleteAdminNotification(notificationId: string): Promise<void> {
+        await axios.delete(apiRoutes.notification.adminDelete, {
+            headers: { Accept: "application/json" },
+            data: { notificationIds: [notificationId] },
+        });
+    }
+
+    static async deleteAdminUserNotification(userId: string, notificationId: string): Promise<void> {
+        await axios.delete(apiRoutes.notification.adminDeleteForUser, {
+            headers: { Accept: "application/json" },
+            data: { userId, notificationId },
+        });
+    }
 }
 
 export default NotificationService;

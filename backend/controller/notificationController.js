@@ -3,7 +3,7 @@ import notificationRecipientModel from '../models/notificationRecipientModel.js'
 import userModel from '../models/userModel.js';
 
 export const createNotification = async (req, res) => {
-    const { title, message, type, recipientType, userNotificationIds } = req.body;
+    const { title, message, type, recipientType, userIds } = req.body;
 
     if (!title || !message || !recipientType) {
         return res.status(400).json({ success: false, message: "title, message and recipientType are required" });
@@ -16,10 +16,10 @@ export const createNotification = async (req, res) => {
             const users = await userModel.find({ role: 'user', isBlocked: false }).select('_id');
             targetUserIds = users.map((u) => u._id);
         } else if (recipientType === 'selected') {
-            if (!userNotificationIds || userNotificationIds.length === 0) {
-                return res.status(400).json({ success: false, message: "userNotificationIds are required for selected type" });
+            if (!userIds || userIds.length === 0) {
+                return res.status(400).json({ success: false, message: "userIds are required for selected type" });
             }
-            targetUserIds = userNotificationIds;
+            targetUserIds = userIds;
         } else {
             return res.status(400).json({ success: false, message: "recipientType must be 'all' or 'selected'" });
         }
@@ -148,6 +148,32 @@ export const adminDeleteNotification = async (req, res) => {
         });
     } catch (error) {
         console.error("ADMIN DELETE NOTIFICATION ERROR:", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const adminDeleteUserNotification = async (req, res) => {
+    const { userId, notificationId } = req.body;
+
+    if (!userId || !notificationId) {
+        return res.status(400).json({ success: false, message: "userId and notificationId are required" });
+    }
+
+    try {
+        const record = await notificationRecipientModel.findOne({ userId, notificationId });
+
+        if (!record) {
+            return res.status(404).json({ success: false, message: "Notification not found for this user" });
+        }
+
+        await record.deleteOne();
+
+        return res.status(200).json({
+            success: true,
+            message: "Notification deleted for the specified user",
+        });
+    } catch (error) {
+        console.error("ADMIN DELETE USER NOTIFICATION ERROR:", error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };

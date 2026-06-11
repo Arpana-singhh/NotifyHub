@@ -28,6 +28,7 @@ const theme: ThemeConfig = {
         Collapse: {
             colorPrimary: '#100f0e',
             borderRadius: 8,
+            contentBg: '#fbfbfb',
         },
         Modal: {
             colorPrimary: '#100f0e',
@@ -37,6 +38,12 @@ const theme: ThemeConfig = {
             colorPrimary: '#100f0e',
             colorPrimaryHover: '#2d2c2b',
             borderRadius: 8,
+        },
+        Badge: {
+            colorPrimary: '#100f0e',
+        },
+        Table: {
+            borderColor: '#e5e7eb',
         },
     },
 };

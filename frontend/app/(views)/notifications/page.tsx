@@ -6,50 +6,29 @@ import { useSession } from 'next-auth/react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import AdminNotificationListing from '../../components/common/AdminNotificationListing';
 import UserNotificationListing from '../../components/common/UserNotificationListing';
-import NotificationService from '../../service/api/notification.services';
-import type { AdminRecipient } from '../../model/AdminNotificationListModel';
-import type { UserNotification } from '../../components/common/UserNotificationListing';
+import { useNotificationStore } from '../../store/notificationStore';
 
 const PAGE_SIZE = 10;
-
 
 export default function NotificationsPage() {
     const { data: session, status } = useSession();
     const isAdmin = session?.user?.role === 'admin';
 
-    const [recipients, setRecipients] = useState<AdminRecipient[]>([]);
-    const [notifications, setNotifications] = useState<UserNotification[]>([]);
-    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [typeFilter, setTypeFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [userFilter, setUserFilter] = useState('all');
+
+    const { notifications, recipients, isUserLoading, isAdminLoading, fetchUserNotifications, fetchAdminNotifications, deleteNotification, deleteAdminNotification, deleteAdminUserNotification } = useNotificationStore();
 
     useEffect(() => {
         if (status !== 'authenticated') return;
-
-        const fetchNotifications = async () => {
-            setLoading(true);
-            try {
-                if (isAdmin) {
-                    const data = await NotificationService.getAdminNotifications();
-                    setRecipients(data);
-                } else {
-                    const items = await NotificationService.getUserNotifications();
-                    setNotifications(items.map((n) => n.toObjectUI()));
-                }
-            } catch {
-                setRecipients([]);
-                setNotifications([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchNotifications();
+        if (isAdmin) fetchAdminNotifications();
+        else fetchUserNotifications();
     }, [status, isAdmin]);
 
-    const handleDelete = async (userNotificationId: string) => {
-        await NotificationService.deleteNotification(userNotificationId);
-        setNotifications((prev) => prev.filter((n) => n.userNotificationId !== userNotificationId));
-    };
+    const loading = isAdmin ? isAdminLoading : isUserLoading;
 
     const userFilterOptions = [
         { value: 'all', label: 'All Users' },
@@ -70,10 +49,14 @@ export default function NotificationsPage() {
                     placeholder="Search notifications..."
                     style={{ maxWidth: 320 }}
                     allowClear
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                    onSearch={(val) => setSearchQuery(val)}
                 />
                 <Select
-                    defaultValue="all"
+                    value={typeFilter}
                     style={{ width: 130 }}
+                    onChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}
                     options={[
                         { value: 'all',     label: 'All Types' },
                         { value: 'info',    label: 'Info' },
@@ -83,8 +66,9 @@ export default function NotificationsPage() {
                     ]}
                 />
                 <Select
-                    defaultValue="all"
+                    value={statusFilter}
                     style={{ width: 130 }}
+                    onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
                     options={[
                         { value: 'all',    label: 'All Status' },
                         { value: 'read',   label: 'Read' },
@@ -93,8 +77,9 @@ export default function NotificationsPage() {
                 />
                 {isAdmin && (
                     <Select
-                        defaultValue="all"
+                        value={userFilter}
                         style={{ width: 160 }}
+                        onChange={(val) => setUserFilter(val)}
                         options={userFilterOptions}
                     />
                 )}
@@ -107,14 +92,25 @@ export default function NotificationsPage() {
                         <Spin size="large" />
                     </div>
                 ) : isAdmin ? (
-                    <AdminNotificationListing recipients={recipients} />
+                    <AdminNotificationListing
+                        recipients={recipients}
+                        onDelete={deleteAdminNotification}
+                        onDeleteForUser={deleteAdminUserNotification}
+                        searchQuery={searchQuery}
+                        typeFilter={typeFilter}
+                        statusFilter={statusFilter}
+                        userFilter={userFilter}
+                    />
                 ) : (
                     <UserNotificationListing
                         notifications={notifications}
                         currentPage={currentPage}
                         pageSize={PAGE_SIZE}
                         onPageChange={setCurrentPage}
-                        onDelete={handleDelete}
+                        onDelete={deleteNotification}
+                        searchQuery={searchQuery}
+                        typeFilter={typeFilter}
+                        statusFilter={statusFilter}
                     />
                 )}
             </div>

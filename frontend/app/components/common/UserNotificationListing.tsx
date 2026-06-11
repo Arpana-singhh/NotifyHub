@@ -27,6 +27,9 @@ interface UserNotificationListingProps {
     pageSize: number;
     onPageChange: (page: number) => void;
     onDelete: (userNotificationId: string) => void;
+    searchQuery?: string;
+    typeFilter?: string;
+    statusFilter?: string;
 }
 
 function NotificationRow({ userNotificationId, type, title, subtitle, status, onDelete }: NotificationRowProps) {
@@ -76,10 +79,21 @@ export default function UserNotificationListing({
     pageSize,
     onPageChange,
     onDelete,
+    searchQuery = '',
+    typeFilter = 'all',
+    statusFilter = 'all',
 }: UserNotificationListingProps) {
-    const paginated = notifications.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    const q = searchQuery.toLowerCase();
+    const filtered = notifications.filter((n) => {
+        if (typeFilter !== 'all' && n.type !== typeFilter) return false;
+        if (statusFilter !== 'all' && n.status !== statusFilter) return false;
+        if (q) return n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q);
+        return true;
+    });
 
-    if (notifications.length === 0) {
+    const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    if (filtered.length === 0) {
         return (
             <div className="d-flex justify-content-center py-5 text-muted">
                 No notifications found.
@@ -89,13 +103,13 @@ export default function UserNotificationListing({
 
     return (
         <>
-            {paginated.map((n, i) => (
-                <NotificationRow key={i} {...n} onDelete={onDelete} />
+            {paginated.map((n) => (
+                <NotificationRow key={n.userNotificationId} {...n} onDelete={onDelete} />
             ))}
-            {notifications.length > pageSize && (
+            {filtered.length > pageSize && (
                 <Pagination
                     current={currentPage}
-                    total={notifications.length}
+                    total={filtered.length}
                     pageSize={pageSize}
                     onChange={onPageChange}
                 />

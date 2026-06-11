@@ -28,6 +28,7 @@ export default function ConfirmModal({
             okButtonProps={{ danger: true }}
             onOk={onConfirm}
             onCancel={onCancel}
+            centered
         >
             <p>{message}</p>
         </Modal>
