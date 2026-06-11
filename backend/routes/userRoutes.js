@@ -8,3 +8,4 @@ router.get('/user', authMiddleware, getUser);
 router.put('/user', authMiddleware, updateUser);
 
 export default router;
+ 

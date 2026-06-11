@@ -2,42 +2,36 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
+import { AxiosError } from 'axios'; // still used by handleChangePassword
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import Avatar from '../../components/common/Avatar';
+import AvatarUpload from '../../components/common/AvatarUpload';
 
 import AuthService from '@/app/service/api/auth.services';
-import UserService from '@/app/service/api/user.services';
+import { useUserStore } from '@/app/store/userStore';
 
 export default function ProfilePage() {
+  const { user, isSaving, fetchUser, updateUser } = useUserStore();
+
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState<string | undefined>();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [saving, setSaving] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
-    UserService.getUser()
-      .then((res: { data: { user?: { name: string; email: string } } }) => {
-        setName(res.data.user?.name ?? '');
-        setEmail(res.data.user?.email ?? '');
-      })
-      .catch(() => toast.error('Failed to load profile'));
+    fetchUser();
   }, []);
 
-  const handleSaveProfile = async () => {
-    try {
-      setSaving(true);
-      await UserService.updateUser({ name });
-      toast.success('Profile updated successfully');
-    } catch (error) {
-      const axiosError = error as AxiosError<{ message?: string }>;
-      toast.error(axiosError.response?.data?.message || 'Failed to update profile');
-    } finally {
-      setSaving(false);
+  useEffect(() => {
+    if (user) {
+      setName(user.name);
+      setAvatarPreview(undefined);
     }
+  }, [user]);
+
+  const handleSaveProfile = async () => {
+    await updateUser(name, avatarPreview);
   };
 
   const handleChangePassword = async () => {
@@ -61,7 +55,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <DashboardLayout userInitials={name ? name.charAt(0).toUpperCase() : '?'} unreadCount={5}>
+    <DashboardLayout userInitials={user?.name ? user.name.charAt(0).toUpperCase() : '?'} unreadCount={5}>
       <div className="main-content__header">
         <h1 className="main-content__title">My Profile</h1>
       </div>
@@ -76,11 +70,16 @@ export default function ProfilePage() {
               </div>
               <div className="nh-card__body">
                 <div className="profile-avatar-section">
-                  <Avatar initials={name ? name.charAt(0).toUpperCase() : '?'} size="xl" />
-                  <button className="nh-btn nh-btn--outline nh-btn--sm">
-                    <i className="fas fa-arrow-up-from-bracket" />
-                    Change avatar
-                  </button>
+                  <AvatarUpload
+                    initials={user?.name ? user.name.charAt(0).toUpperCase() : '?'}
+                    src={avatarPreview ?? user?.avatar}
+                    size="xl"
+                    uploading={isSaving}
+                    onUpload={setAvatarPreview}
+                  />
+                  <span className="text-muted" style={{ fontSize: '0.75rem' }}>
+                    Click or drag an image to change avatar
+                  </span>
                 </div>
 
                 <div className="form-group">
@@ -100,7 +99,7 @@ export default function ProfilePage() {
                     id="email"
                     type="email"
                     className="nh-input"
-                    value={email}
+                    value={user?.email ?? ''}
                     readOnly
                   />
                 </div>
@@ -108,9 +107,9 @@ export default function ProfilePage() {
                 <button
                   className="nh-btn nh-btn--secondary nh-btn--full mt-2"
                   onClick={handleSaveProfile}
-                  disabled={saving}
+                  disabled={isSaving}
                 >
-                  {saving ? 'Saving...' : 'Save changes'}
+                  {isSaving ? 'Saving...' : 'Save changes'}
                 </button>
               </div>
             </div>

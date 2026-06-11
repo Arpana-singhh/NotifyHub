@@ -1,5 +1,9 @@
+'use client';
+
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Avatar from '../common/Avatar';
+import { useUserStore } from '@/app/store/userStore';
 
 interface NavbarProps {
   isAdmin?: boolean;
@@ -14,6 +18,15 @@ export default function Navbar({
   userInitials = 'JS',
   unreadCount = 0,
 }: NavbarProps) {
+  const { user, fetchUser } = useUserStore();
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const displayName = user?.name || userName;
+  const initials = user?.name ? user.name.charAt(0).toUpperCase() : userInitials;
+
   return (
     <header className="nh-navbar">
       <Link
@@ -26,8 +39,8 @@ export default function Navbar({
       </Link>
 
       <div className="nh-navbar__right">
-        {userName && (
-          <span className="nh-navbar__user-label">{userName}</span>
+        {displayName && (
+          <span className="nh-navbar__user-label">{displayName}</span>
         )}
         {!isAdmin && (
           <button className="nh-navbar__bell" aria-label="Notifications">
@@ -37,7 +50,7 @@ export default function Navbar({
             )}
           </button>
         )}
-        <Avatar initials={userInitials} size="md" />
+        <Avatar initials={initials} src={user?.avatar || undefined} size="md" />
       </div>
     </header>
   );

@@ -1,19 +1,7 @@
-import axios, { type AxiosResponse } from "axios";
+import axios from "axios";
 import apiRoutes from "@/config/apiRoutes";
 import "../apiClient";
-
-type ApiResponse = {
-    success: boolean;
-    message: string;
-    user?: {
-        _id: string;
-        name: string;
-        email: string;
-        role: string;
-        avatar: string;
-        isAccountVerified: boolean;
-    };
-};
+import { UserProfileModel, UserListItem } from "@/app/model/UserModel";
 
 type UpdateUserPayload = {
     name?: string;
@@ -21,16 +9,24 @@ type UpdateUserPayload = {
 };
 
 class UserService {
-    static async getUser(): Promise<AxiosResponse<ApiResponse>> {
-        return axios.get(apiRoutes.user.detail, {
+    static async getUser(): Promise<UserProfileModel> {
+        const res = await axios.get(apiRoutes.user.detail, {
+            headers: { Accept: "application/json" },
+        });
+        return new UserProfileModel(res.data.user ?? {});
+    }
+
+    static async updateUser(payload: UpdateUserPayload): Promise<void> {
+        await axios.put(apiRoutes.user.update, payload, {
             headers: { Accept: "application/json" },
         });
     }
 
-    static async updateUser(payload: UpdateUserPayload): Promise<AxiosResponse<ApiResponse>> {
-        return axios.put(apiRoutes.user.update, payload, {
+    static async getUsers(): Promise<UserListItem[]> {
+        const res = await axios.get(apiRoutes.user.list, {
             headers: { Accept: "application/json" },
         });
+        return UserListItem.fromApiList(res.data.users ?? []);
     }
 }
 
