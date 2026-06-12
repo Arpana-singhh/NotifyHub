@@ -24,6 +24,7 @@ const apiRoutes = {
     adminDelete:          `${config.baseUrl}/admin/notifications`,
     adminDeleteForUser:   `${config.baseUrl}/admin/notifications/user`,
     stats:  `${config.baseUrl}/admin/dashboard/stats`,
+    create: `${config.baseUrl}/admin/notifications`,
   },
 };
 

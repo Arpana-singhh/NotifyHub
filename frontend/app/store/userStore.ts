@@ -108,6 +108,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         set({ isLoadingUsers: true });
         try {
             const users = await UserService.getAllUsers();
+            console.log("users", users)
             usersListCache.set(USERS_LIST_CACHE_KEY, users);
             set({ users });
         } catch (error) {

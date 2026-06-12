@@ -52,6 +52,19 @@ class NotificationService {
         });
     }
 
+    static async createNotification(payload: {
+        title: string;
+        message: string;
+        type: string;
+        recipientType: 'all' | 'selected';
+        userIds?: string[];
+    }): Promise<{ message: string }> {
+        const response = await axios.post(apiRoutes.notification.create, payload, {
+            headers: { Accept: "application/json" },
+        });
+        return response.data;
+    }
+
     static async deleteAdminUserNotification(userId: string, notificationId: string): Promise<void> {
         await axios.delete(apiRoutes.notification.adminDeleteForUser, {
             headers: { Accept: "application/json" },
