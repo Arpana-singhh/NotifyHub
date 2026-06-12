@@ -39,6 +39,12 @@ interface NotificationState {
     deleteAdminNotification: (notificationId: string) => Promise<void>;
     deleteAdminUserNotification: (userId: string, notificationId: string) => Promise<void>;
 
+    // ── SSE real-time helpers ──────────────────────────────────────────────
+    // Called by useSSE hook when the server pushes an event
+    prependNotification: (item: UserNotification) => void;
+    removeNotification: (userNotificationId: string) => void;
+    invalidateAndRefetch: () => Promise<void>;
+
     reset: () => void;
 }
 
@@ -176,6 +182,33 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         }));
         adminNotifCache.set(ADMIN_CACHE_KEY, updated);
         set({ recipients: updated });
+    },
+
+    /* ---------------- SSE REAL-TIME HELPERS ---------------- */
+
+    // Add a new notification to the TOP of the list (called on 'notification:new' SSE event).
+    // Also updates the TTL cache so a cache-hit within 5 min still includes this item.
+    prependNotification: (item: UserNotification) => {
+        const updated = [item, ...get().notifications];
+        userNotifCache.set(USER_CACHE_KEY, updated);
+        set({ notifications: updated });
+    },
+
+    // Remove a notification from the list by its recipient record ID
+    // (called on 'notification:deleted' SSE event — works for both user and admin deletes).
+    removeNotification: (userNotificationId: string) => {
+        const updated = get().notifications.filter(
+            (n) => n.userNotificationId !== userNotificationId
+        );
+        userNotifCache.set(USER_CACHE_KEY, updated);
+        set({ notifications: updated });
+    },
+
+    // Bust the cache and force a fresh fetch from the server.
+    // Used as a fallback when an SSE payload can't be parsed.
+    invalidateAndRefetch: async () => {
+        userNotifCache.delete(USER_CACHE_KEY);
+        await get().fetchUserNotifications(true);
     },
 
     /* ---------------- RESET ---------------- */

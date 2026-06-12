@@ -1,6 +1,7 @@
 import notificationModel from '../models/notificationModel.js';
 import notificationRecipientModel from '../models/notificationRecipientModel.js';
 import userModel from '../models/userModel.js';
+import { sendToUser, broadcastToUsers } from '../utils/sseManager.js';
 
 export const createNotification = async (req, res) => {
     const { title, message, type, recipientType, userIds } = req.body;
@@ -36,7 +37,22 @@ export const createNotification = async (req, res) => {
             userId,
         }));
 
-        await notificationRecipientModel.insertMany(records);
+        // insertMany returns the created documents including their _id values
+        const insertedRecords = await notificationRecipientModel.insertMany(records);
+
+        // Push a real-time SSE event to each recipient who is currently connected.
+        // Each user gets their own unique userNotificationId so the frontend can
+        // track, mark-read, or delete that specific record without a full refetch.
+        for (const record of insertedRecords) {
+            sendToUser(record.userId.toString(), 'notification:new', {
+                userNotificationId: record._id.toString(),
+                type:      notification.type,
+                title:     notification.title,
+                subtitle:  notification.message,
+                status:    'unread',
+                createdAt: record.createdAt.toISOString(),
+            });
+        }
 
         return res.status(201).json({
             success: true,
@@ -193,8 +209,21 @@ export const adminDeleteNotification = async (req, res) => {
     }
 
     try {
+        // Fetch recipient records BEFORE deleting so we know which users to notify
+        const affectedRecipients = await notificationRecipientModel
+            .find({ notificationId: { $in: notificationIds } })
+            .select('userId _id');
+
+        // Delete from DB
         const { deletedCount } = await notificationModel.deleteMany({ _id: { $in: notificationIds } });
         await notificationRecipientModel.deleteMany({ notificationId: { $in: notificationIds } });
+
+        // Notify each affected user that their notification was removed
+        for (const r of affectedRecipients) {
+            sendToUser(r.userId.toString(), 'notification:deleted', {
+                userNotificationId: r._id.toString(),
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -222,6 +251,11 @@ export const adminDeleteUserNotification = async (req, res) => {
         }
 
         await record.deleteOne();
+
+        // Notify the specific user their notification was removed by the admin
+        sendToUser(userId.toString(), 'notification:deleted', {
+            userNotificationId: record._id.toString(),
+        });
 
         return res.status(200).json({
             success: true,
@@ -364,6 +398,11 @@ export const deleteNotification = async (req, res) => {
 
         record.isDeletedByUser = true;
         await record.save();
+
+        // Tell the user's other open tabs to remove this notification from their list
+        sendToUser(req.userId.toString(), 'notification:deleted', {
+            userNotificationId: record._id.toString(),
+        });
 
         return res.status(200).json({
             success: true,

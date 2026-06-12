@@ -1,5 +1,6 @@
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import SSEProvider from '../common/SSEProvider';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,8 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <div className="dashboard-layout">
+      {/* Opens the SSE stream for regular users — renders nothing visible */}
+      <SSEProvider />
       <Navbar
         isAdmin={isAdmin}
         userName={userName}
