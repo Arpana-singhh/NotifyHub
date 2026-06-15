@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
               <StatCard
                 label="Total Users"
                 value={dashboardStats?.totalUsers ?? '—'}
-                sub="Active, non-admin"
+                sub="Active Users"
               />
             </div>
             <div className="col-6 col-lg-3">

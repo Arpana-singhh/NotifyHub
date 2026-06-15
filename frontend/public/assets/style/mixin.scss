@@ -1,0 +1,163 @@
+@mixin transition($time) {
+    transition: all $time ease-in-out;
+}
+
+@mixin image-fill {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+
+@mixin upto-1600 {
+    @media (min-width: 1600px) {
+        @content;
+    }
+}
+
+@mixin large-screen {
+    @media (min-width: 1400px) and (max-width: 1600px) {
+        @content;
+    }
+}
+
+@mixin big-desktop {
+    @media (min-width: 1400px) and (max-width: 2500px) {
+        @content;
+    }
+}
+
+@mixin screen-from-1400 {
+    @media (max-width: 1400px) {
+        @content;
+    }
+}
+
+@mixin screen-up-1400 {
+    @media (min-width: 1400px) {
+        @content;
+    }
+}
+
+@mixin screen-up-1300 {
+    @media (min-width: 1300px) {
+        @content;
+    }
+}
+
+@mixin screen-from-1300 {
+    @media (max-width: 1300px) {
+        @content;
+    }
+}
+
+@mixin mini-desktop {
+    @media (max-width: 1199px) {
+        @content;
+    }
+}
+
+@mixin mini-desktop_min {
+    @media (min-width: 1199px) {
+        @content;
+    }
+}
+
+@mixin tab_large {
+    @media (max-width: 1024px) {
+        @content;
+    }
+}
+
+@mixin tab_min {
+    @media (min-width: 992px) {
+        @content;
+    }
+}
+
+@mixin tab {
+    @media (max-width: 991px) {
+        @content;
+    }
+}
+
+@mixin phone_min {
+    @media (min-width: 768px) {
+        @content;
+    }
+}
+
+@mixin phone {
+    @media (max-width: 767px) {
+        @content;
+    }
+}
+
+@mixin phone-max-640 {
+    @media (max-width: 640px) {
+        @content;
+    }
+}
+
+@mixin phone-xs-min {
+    @media (min-width: 575px) {
+        @content;
+    }
+}
+
+@mixin phone-xs {
+    @media (max-width: 575px) {
+        @content;
+    }
+}
+
+@mixin phone_min_xr {
+    @media (min-width: 481px) {
+        @content;
+    }
+}
+
+@mixin phone-xr {
+    @media (max-width: 480px) {
+        @content;
+    }
+}
+
+@mixin phone-6 {
+    @media (max-width: 420px) {
+        @content;
+    }
+}
+
+@mixin phone-5s {
+    @media (max-width: 375px) {
+        @content;
+    }
+}
+
+@mixin fontSize($lineHeght , $fontSize ) {
+    font-size: $fontSize;
+    line-height: calc(#{$lineHeght} + #{$fontSize});
+}
+
+@mixin flex_box($items) {
+    $menu-items: $items;
+    $width: (
+        100/$menu-items) * 1%;
+    max-width: $width;
+    flex: 0 0 $width;
+}
+
+@mixin animation($animation , $animation_name) {
+    $delay: calc(1s + #{$animation}
+    );
+animation: $animation $delay ease-in-out $animation_name;
+}
+
+// Three dot
+@mixin text_truncate($lines: 2) {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+}

@@ -48,7 +48,7 @@ export default function CountUp({ end, suffix = '', prefix = '', decimals = 0, d
     : Math.round(value).toLocaleString();
 
   return (
-    <span ref={ref}>
+    <span ref={ref} data-section="light">
       {prefix}
       {formatted}
       {suffix}

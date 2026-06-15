@@ -11,9 +11,10 @@ export async function proxy(req: NextRequest) {
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
     const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
 
-    // Logged-in user trying to visit public routes → redirect to dashboard
+    // Logged-in user trying to visit public routes → redirect to role home
     if (token && isPublicRoute) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+        const dest = token.role === "admin" ? "/admin" : "/dashboard";
+        return NextResponse.redirect(new URL(dest, req.url));
     }
 
     // Not logged in trying to visit protected route → redirect to login

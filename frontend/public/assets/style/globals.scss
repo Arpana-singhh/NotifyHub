@@ -1,3 +1,4 @@
+@import "mixin.scss";
 // ─────────────────────────────────────────────
 // DESIGN TOKENS — CSS CUSTOM PROPERTIES
 // ─────────────────────────────────────────────
@@ -536,6 +537,9 @@ textarea.nh-input {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5) var(--space-6);
+  @include phone-xr{
+    padding: var(--space-2);
+  }
 
   &__label {
     font-size: var(--font-size-xs);
@@ -622,6 +626,8 @@ textarea.nh-input {
   justify-content: space-between;
   padding: 0 var(--space-6);
   flex-shrink: 0;
+  position: fixed;
+  width: 100%;
 
   &__brand {
     display: inline-flex;
@@ -712,6 +718,17 @@ textarea.nh-input {
   flex-shrink: 0;
   padding: var(--space-4) 0;
   overflow-y: auto;
+  position: fixed;
+  top: 56px;
+  height: calc(100vh - 56px);
+
+  @include phone{
+    width:68px;
+  }
+
+  @include phone-xr{
+    width:50px;
+  }
 
   &__nav {
     display: flex;
@@ -719,6 +736,9 @@ textarea.nh-input {
     gap: 2px;
     padding: 0 var(--space-3);
     flex: 1;
+    @include phone-xr{
+      padding: 0 var(--space-1);
+    }
   }
 
   &__item {
@@ -737,6 +757,16 @@ textarea.nh-input {
     background: transparent;
     width: 100%;
     text-align: left;
+
+    @include phone{
+      justify-content:center;
+    }
+
+    .label-text{
+      @include phone{
+        display:none;
+      }
+    }
 
     i {
       width: 18px;
@@ -786,10 +816,18 @@ textarea.nh-input {
 // MAIN CONTENT AREA
 // ─────────────────────────────────────────────
 .main-content {
-  flex: 1;
+  width: calc(100% - 220px);
+  margin-left: auto;
   padding: var(--space-8);
   overflow-y: auto;
   background: var(--color-bg-page);
+  @include phone{
+    width: calc(100% - 68px);
+  }
+  @include phone{
+    width: calc(100% - 50px);
+    padding: var(--space-2);
+  }
 
   &__header {
     display: flex;
@@ -1500,6 +1538,11 @@ textarea.nh-input {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-full);
     box-shadow: var(--shadow-xs);
+    @include tab{
+      display: flex;
+      margin-inline: auto;
+      width: fit-content;
+    }
   }
 
   &__badge-dot {
@@ -1517,6 +1560,9 @@ textarea.nh-input {
     letter-spacing: -0.02em;
     color: var(--color-text-primary);
     margin-bottom: var(--space-5);
+    @include tab{
+      text-align:center;
+    }
 
     span {
       background: linear-gradient(120deg, var(--color-primary) 30%, var(--color-text-muted));
@@ -1531,6 +1577,10 @@ textarea.nh-input {
     color: var(--color-text-muted);
     max-width: 520px;
     margin-bottom: var(--space-8);
+    @include tab{
+      max-width:100%;
+      text-align:center;
+    }
   }
 
   &__actions {
@@ -1538,14 +1588,20 @@ textarea.nh-input {
     flex-wrap: wrap;
     gap: var(--space-3);
     margin-bottom: var(--space-6);
+    @include tab{
+      justify-content:center;
+    }
   }
 
   &__trust {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: var(--space-2);
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    @include tab{
+      justify-content:center;
+    }
 
     i {
       color: var(--color-success);
@@ -1819,30 +1875,82 @@ textarea.nh-input {
 
 // ── Stats band ──
 .home-stats {
-  padding: calc(var(--space-10) * 1.2) 0;
+  padding: calc(var(--space-5) * 1.5) 0;
   background: var(--color-primary);
+  text-align: center;
+
+  &__grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    @include tab{
+      justify-content: center;
+      .reveal.is-visible{
+        width: calc(100% / 2 - ( 1 * 10px ) / 2);
+        display: flex;
+        justify-content: center;
+      }
+    }
+  }
 
   &__item {
+    flex: 0 0 auto;
+    width: 220px;
+    padding: var(--space-6) var(--space-8);
     text-align: center;
+
+    & + & {
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    // @media (max-width: 600px) {
+    //   width: 50%;
+    //   border-left: none !important;
+
+    //   &:nth-child(2) { border-left: 1px solid rgba(255, 255, 255, 0.15) !important; }
+    //   &:nth-child(3) { border-top: 1px solid rgba(255, 255, 255, 0.15); }
+    //   &:nth-child(4) { border-top: 1px solid rgba(255, 255, 255, 0.15); border-left: 1px solid rgba(255, 255, 255, 0.15) !important; }
+    // }
   }
 
   &__value {
-    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    font-size: 28px;
     font-weight: var(--font-weight-bold);
-    color: var(--color-white);
     line-height: var(--line-height-tight);
+    @include phone-xs{
+      font-size: 22px;
+    }
+
+    span{
+      --sz:98px;
+      width: var(--sz);
+      height: var(--sz);
+      display: block;
+      background: var(--color-primary-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      margin-inline: auto;
+      @include phone-xs{
+        --sz: 80px;
+      }
+    }
   }
 
   &__label {
-    margin-top: var(--space-2);
+    margin-top: var(--space-3);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: rgba(255, 255, 255, 0.85);
   }
 
   &__sub {
+    margin-top: var(--space-1);
     font-size: var(--font-size-sm);
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.45);
   }
 }
 
@@ -2040,7 +2148,7 @@ textarea.nh-input {
 }
 
 // ── Responsive ──
-@media (max-width: 991.98px) {
+@include tab {
   .home-nav__links {
     display: none;
   }
@@ -2059,7 +2167,7 @@ textarea.nh-input {
   }
 }
 
-@media (max-width: 575.98px) {
+@include phone-xs {
   .home-nav {
     padding: 0 var(--space-4);
   }
@@ -2069,7 +2177,7 @@ textarea.nh-input {
   }
 
   .home-hero__actions .nh-btn {
-    width: 100%;
+    width: fit-content;
   }
 
   .notif-mock__meta {

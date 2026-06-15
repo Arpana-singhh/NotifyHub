@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import { Tooltip } from 'antd';
 
 interface NavItem {
   label: string;
@@ -34,25 +35,28 @@ export default function Sidebar() {
     <aside className="nh-sidebar">
       <nav className="nh-sidebar__nav">
         {items.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`nh-sidebar__item${pathname === item.href ? ' nh-sidebar__item--active' : ''}`}
-          >
-            <i className={item.icon} />
-            {item.label}
-          </Link>
+          <Tooltip key={item.href} title={item.label} placement="right">
+            <Link
+              href={item.href}
+              className={`nh-sidebar__item${pathname === item.href ? ' nh-sidebar__item--active' : ''}`}
+            >
+              <i className={item.icon} />
+              <span className="label-text">{item.label}</span>
+            </Link>
+          </Tooltip>
         ))}
 
         <div className="nh-sidebar__spacer" />
 
+        <Tooltip title="Logout" placement="right">
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
             className="nh-sidebar__item nh-sidebar__item--logout"
           >
             <i className="fas fa-arrow-right-from-bracket" />
-            Logout
+            <span className="label-text"> Logout </span>
           </button>
+        </Tooltip>
 
       </nav>
     </aside>
