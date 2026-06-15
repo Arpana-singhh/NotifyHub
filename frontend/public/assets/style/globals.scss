@@ -674,13 +674,17 @@ textarea.nh-input {
   &__right {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-3);
   }
 
   &__user-label {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
+    margin-bottom:0;
+    span{
+      display:block;
+    }
     @include phone-xs{
       display:none;
     }

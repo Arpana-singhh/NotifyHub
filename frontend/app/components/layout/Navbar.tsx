@@ -42,9 +42,6 @@ export default function Navbar({
       </Link>
 
       <div className="nh-navbar__right">
-        {displayName && (
-          <span className="nh-navbar__user-label">{displayName}</span>
-        )}
         {!isAdmin && (
           <button className="nh-navbar__bell" aria-label="Notifications">
             <i className="fas fa-bell" />
@@ -56,6 +53,12 @@ export default function Navbar({
         <Tooltip title={displayName} placement="bottom">
           <Avatar initials={initials} src={user?.avatar || undefined} size="md" />
         </Tooltip>
+        {displayName && (
+          <p className="nh-navbar__user-label">
+            <span>{displayName}</span>
+            <span>{user?.email}</span>
+          </p>
+        )}
       </div>
     </header>
   );
