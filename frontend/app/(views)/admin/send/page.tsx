@@ -1,8 +1,8 @@
 'use client';
 
 import DashboardLayout from '@/app/components/layout/DashboardLayout';
-import NotificationService from '@/app/service/api/notification.services';
 import { useUserStore } from '@/app/store/userStore';
+import { useNotificationStore } from '@/app/store/notificationStore';
 import { Button, Input, Radio, Select } from 'antd';
 import { Formik, Form, Field, type FieldProps } from 'formik';
 import { useEffect } from 'react';
@@ -45,6 +45,8 @@ function validate(values: SendFormValues) {
 export default function SendNotificationPage() {
   const { users, fetchAllUserByAdmin } = useUserStore();
 
+  const { createNotification } = useNotificationStore();
+
   useEffect(() => { fetchAllUserByAdmin(); }, []);
 
   const selectableUsers = users.filter(u => u.role === 'user' && !u.isBlocked);
@@ -60,14 +62,14 @@ export default function SendNotificationPage() {
 
   async function handleSubmit(values: SendFormValues, { setSubmitting, resetForm }: { setSubmitting: (v: boolean) => void; resetForm: () => void }) {
     try {
-      const payload: Parameters<typeof NotificationService.createNotification>[0] = {
+      const payload = {
         title:         values.title,
         message:       values.message,
         type:          values.type,
-        recipientType: values.recipient === 'all' ? 'all' : 'selected',
+        recipientType: values.recipient === 'all' ? 'all' : 'selected' as 'all' | 'selected',
         ...(values.recipient === 'select' && { userIds: values.selectedUserIds }),
       };
-      const response = await NotificationService.createNotification(payload);
+      const response = await createNotification(payload);
       toast.success(response.message);
       resetForm();
     } catch {
@@ -252,7 +254,7 @@ export default function SendNotificationPage() {
                           disabled={isSubmitting}
                           block
                         >
-                          Send notification&nbsp;<i className="fas fa-paper-plane" />
+                          Send<span className="mob-hide">notification</span><i className="fas fa-paper-plane" />
                         </Button>
                         <Button
                           type="default"

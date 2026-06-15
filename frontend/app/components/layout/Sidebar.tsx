@@ -22,7 +22,6 @@ const ADMIN_NAV: NavItem[] = [
   { label: 'Send Notification', href: '/admin/send',         icon: 'fas fa-paper-plane' },
   { label: 'Notifications',     href: '/notifications',      icon: 'fas fa-bell' },
   { label: 'Users',             href: '/admin/users',        icon: 'fas fa-users' },
-  { label: 'Analytics',         href: '/admin/analytics',    icon: 'fas fa-chart-bar' },
 ];
 
 export default function Sidebar() {

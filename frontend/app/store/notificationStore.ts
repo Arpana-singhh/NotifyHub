@@ -43,6 +43,7 @@ interface NotificationState {
     markAsRead: (userNotificationId: string) => Promise<void>;
     markAllAsRead: () => Promise<void>;
     deleteNotification: (userNotificationId: string) => Promise<void>;
+    createNotification: (payload: Parameters<typeof NotificationService.createNotification>[0]) => Promise<{ message: string }>;
     deleteAdminNotification: (notificationId: string) => Promise<void>;
     deleteAdminUserNotification: (userId: string, notificationId: string) => Promise<void>;
 
@@ -197,6 +198,16 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         }));
         adminNotifCache.set(ADMIN_CACHE_KEY, updated);
         set({ recipients: updated });
+    },
+
+    /* ---------------- CREATE NOTIFICATION (admin) ---------------- */
+
+    createNotification: async (payload) => {
+        const result = await NotificationService.createNotification(payload);
+        adminNotifCache.delete(ADMIN_CACHE_KEY);
+        statsCache.delete(STATS_CACHE_KEY);
+        chartCache.delete(CHART_CACHE_KEY);
+        return result;
     },
 
     /* ---------------- DELETE NOTIFICATION (admin — single user) ---------------- */

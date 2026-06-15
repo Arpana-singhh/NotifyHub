@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { Tooltip } from 'antd';
 import Avatar from '../common/Avatar';
 import { useUserStore } from '@/app/store/userStore';
 import { useNotificationStore } from '@/app/store/notificationStore';
@@ -52,7 +53,9 @@ export default function Navbar({
             )}
           </button>
         )}
-        <Avatar initials={initials} src={user?.avatar || undefined} size="md" />
+        <Tooltip title={displayName} placement="bottom">
+          <Avatar initials={initials} src={user?.avatar || undefined} size="md" />
+        </Tooltip>
       </div>
     </header>
   );

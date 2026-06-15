@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Collapse, Badge as AntBadge, Table, Button } from 'antd';
+import { Collapse, Badge as AntBadge, Table, Button, Tooltip } from 'antd';
 import Badge from './Badge';
 import ConfirmModal from './ConfirmModal';
 import Pagination from './Pagination';
@@ -425,27 +425,33 @@ export default function AdminNotificationListing({ recipients, onDelete, onDelet
     return (
         <>
             <div className="admin-view-tabs">
-                <Button
-                    type={view === 'notifications' ? 'primary' : 'default'}
-                    icon={<i className="fas fa-bell" />}
-                    onClick={() => setView('notifications')}
-                >
-                    Notifications
-                </Button>
-                <Button
-                    type={view === 'delivery-log' ? 'primary' : 'default'}
-                    icon={<i className="fas fa-list-check" />}
-                    onClick={() => setView('delivery-log')}
-                >
-                    Delivery Log
-                </Button>
-                <Button
-                    type={view === 'by-recipient' ? 'primary' : 'default'}
-                    icon={<i className="fas fa-users" />}
-                    onClick={() => setView('by-recipient')}
-                >
-                   Notifications Per User
-                </Button>
+                <Tooltip title="Notifications" placement="bottom">
+                    <Button
+                        type={view === 'notifications' ? 'primary' : 'default'}
+                        icon={<i className="fas fa-bell" />}
+                        onClick={() => setView('notifications')}
+                    >
+                        <span className="mob-hide">Notifications</span>
+                    </Button>
+                </Tooltip>
+                <Tooltip title="Delivery Log" placement="bottom">
+                    <Button
+                        type={view === 'delivery-log' ? 'primary' : 'default'}
+                        icon={<i className="fas fa-list-check" />}
+                        onClick={() => setView('delivery-log')}
+                    >
+                        <span className="mob-hide">Delivery Log</span>
+                    </Button>
+                </Tooltip>
+                <Tooltip title="Notifications Per User" placement="bottom">
+                    <Button
+                        type={view === 'by-recipient' ? 'primary' : 'default'}
+                        icon={<i className="fas fa-users" />}
+                        onClick={() => setView('by-recipient')}
+                    >
+                        <span className="mob-hide">Notifications Per User</span>
+                    </Button>
+                </Tooltip>
             </div>
 
             {view === 'by-recipient' && <ByRecipientView recipients={recipients} searchQuery={searchQuery} typeFilter={typeFilter} statusFilter={statusFilter} userFilter={userFilter} />}
