@@ -5,6 +5,8 @@ import type { AdminRecipient } from '../model/AdminNotificationListModel';
 import type { UserNotification } from '../components/common/UserNotificationListing';
 import type { DashboardStatsModel } from '../model/DashboardStatsModel';
 
+export interface ChartDataPoint { date: string; label: string; count: number; }
+
 /* ------------------------------------------------------------------ */
 /* TTL CACHES (module-level, shared across store instances)             */
 /* ------------------------------------------------------------------ */
@@ -12,10 +14,12 @@ import type { DashboardStatsModel } from '../model/DashboardStatsModel';
 const userNotifCache  = new TTLMap<string, UserNotification[]>(5 * 60 * 1000);
 const adminNotifCache = new TTLMap<string, AdminRecipient[]>(5 * 60 * 1000);
 const statsCache      = new TTLMap<string, DashboardStatsModel>(5 * 60 * 1000);
+const chartCache      = new TTLMap<string, ChartDataPoint[]>(5 * 60 * 1000);
 
 const USER_CACHE_KEY = 'user-notifications';
 const ADMIN_CACHE_KEY = 'admin-notifications';
 const STATS_CACHE_KEY = 'admin-dashboard-stats';
+const CHART_CACHE_KEY = 'admin-chart-data';
 
 /* ------------------------------------------------------------------ */
 /* STORE TYPES                                                         */
@@ -25,14 +29,17 @@ interface NotificationState {
     notifications: UserNotification[];
     recipients: AdminRecipient[];
     dashboardStats: DashboardStatsModel | null;
+    chartData: ChartDataPoint[];
 
     isUserLoading: boolean;
     isAdminLoading: boolean;
     isStatsLoading: boolean;
+    isChartLoading: boolean;
 
     fetchUserNotifications: (force?: boolean) => Promise<void>;
     fetchAdminNotifications: (force?: boolean) => Promise<void>;
     fetchDashboardStats: (force?: boolean) => Promise<void>;
+    fetchChartData: (force?: boolean) => Promise<void>;
     markAsRead: (userNotificationId: string) => Promise<void>;
     markAllAsRead: () => Promise<void>;
     deleteNotification: (userNotificationId: string) => Promise<void>;
@@ -56,10 +63,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     notifications: [],
     recipients: [],
     dashboardStats: null,
+    chartData: [],
 
     isUserLoading: false,
     isAdminLoading: false,
     isStatsLoading: false,
+    isChartLoading: false,
 
     /* ---------------- FETCH USER NOTIFICATIONS ---------------- */
 
@@ -125,6 +134,26 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             set({ dashboardStats: null });
         } finally {
             set({ isStatsLoading: false });
+        }
+    },
+
+    /* ---------------- FETCH CHART DATA (ADMIN) ---------------- */
+
+    fetchChartData: async (force = false) => {
+        if (!force) {
+            const cached = chartCache.get(CHART_CACHE_KEY);
+            if (cached) { set({ chartData: cached }); return; }
+        }
+        if (get().isChartLoading) return;
+        set({ isChartLoading: true });
+        try {
+            const data = await NotificationService.getChartData();
+            chartCache.set(CHART_CACHE_KEY, data);
+            set({ chartData: data });
+        } catch {
+            set({ chartData: [] });
+        } finally {
+            set({ isChartLoading: false });
         }
     },
 
@@ -217,6 +246,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         userNotifCache.clear();
         adminNotifCache.clear();
         statsCache.clear();
-        set({ notifications: [], recipients: [], dashboardStats: null, isUserLoading: false, isAdminLoading: false, isStatsLoading: false });
+        chartCache.clear();
+        set({ notifications: [], recipients: [], dashboardStats: null, chartData: [], isUserLoading: false, isAdminLoading: false, isStatsLoading: false, isChartLoading: false });
     },
 }));

@@ -1138,7 +1138,7 @@ textarea.nh-input {
 // PROGRESS STAT (read rate)
 // ─────────────────────────────────────────────
 .progress-stat {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 
   &:last-child {
     margin-bottom: 0;
@@ -2414,4 +2414,8 @@ textarea.nh-input {
 
 .ant-table-content{
   overflow:auto;
+}
+
+.progress-card{
+  height:100%;
 }

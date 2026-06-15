@@ -4,24 +4,15 @@ import { useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import StatCard from '../../components/common/StatCard';
+import BarChart from '@/app/components/common/BarChart';
 import { useNotificationStore } from '@/app/store/notificationStore';
 import Badge from '@/app/components/common/Badge';
 import { useSession } from 'next-auth/react';
 
-const BAR_DAYS = [
-  { label: 'Mon', height: 35, active: false },
-  { label: 'Tue', height: 28, active: false },
-  { label: 'Wed', height: 45, active: false },
-  { label: 'Thu', height: 38, active: false },
-  { label: 'Fri', height: 52, active: false },
-  { label: 'Sat', height: 65, active: false },
-  { label: 'Sun', height: 100, active: true },
-];
-
 export default function AdminDashboardPage() {
   const { data: session, status } = useSession();
   const isAdmin = session?.user?.role === 'admin';
-  const { dashboardStats, isStatsLoading, fetchDashboardStats ,fetchAdminNotifications} = useNotificationStore();
+  const { dashboardStats, isStatsLoading, fetchDashboardStats, fetchAdminNotifications, chartData, fetchChartData } = useNotificationStore();
   const [animatedWidths, setAnimatedWidths] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -29,6 +20,7 @@ export default function AdminDashboardPage() {
     if (isAdmin) {
       fetchAdminNotifications();
       fetchDashboardStats();
+      fetchChartData();
     }
 }, [status, isAdmin]);
 
@@ -94,7 +86,7 @@ export default function AdminDashboardPage() {
 
       {/* Charts row */}
       <div className="container-fluid px-0">
-        <div className="row g-3">
+        <div className="row g-3 align-items-stretch">
           {/* Bar chart */}
           <div className="col-12 col-lg-6">
             <div className="nh-card">
@@ -102,24 +94,14 @@ export default function AdminDashboardPage() {
                 <span className="nh-card__title">Notifications sent — last 7 days</span>
               </div>
               <div className="nh-card__body">
-                <div className="bar-chart">
-                  {BAR_DAYS.map((d) => (
-                    <div key={d.label} className="bar-chart__col">
-                      <div
-                        className={`bar-chart__bar${d.active ? ' bar-chart__bar--active' : ''}`}
-                        style={{ height: `${d.height}%` }}
-                      />
-                      <span className="bar-chart__label">{d.label}</span>
-                    </div>
-                  ))}
-                </div>
+                <BarChart data={chartData} />
               </div>
             </div>
           </div>
 
           {/* Read rate by type */}
           <div className="col-12 col-lg-6">
-            <div className="nh-card">
+            <div className="nh-card progress-card">
               <div className="nh-card__header">
                 <span className="nh-card__title">Read rate by type</span>
               </div>

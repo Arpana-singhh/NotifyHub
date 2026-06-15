@@ -1,6 +1,6 @@
 import express from 'express';
 import { getAllUsers, getUserById, updateUserRole, deleteUserById, toggleBlockUser } from '../controller/adminUserController.js';
-import { createNotification, adminDeleteNotification, adminDeleteUserNotification, adminGetAllNotifications, adminGetDashboardStats } from '../controller/notificationController.js';
+import { createNotification, adminDeleteNotification, adminDeleteUserNotification, adminGetAllNotifications, adminGetDashboardStats, getNotificationChartData } from '../controller/notificationController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import adminMiddleware from '../middleware/adminMiddleware.js';
 
@@ -13,6 +13,7 @@ router.patch('/users/:id/block', authMiddleware, adminMiddleware, toggleBlockUse
 router.patch('/users/:id/role', authMiddleware, adminMiddleware, updateUserRole);
 
 router.get('/dashboard/stats', authMiddleware, adminMiddleware, adminGetDashboardStats);
+router.get('/dashboard/chart', authMiddleware, adminMiddleware, getNotificationChartData);
 router.get('/notifications', authMiddleware, adminMiddleware, adminGetAllNotifications);
 router.post('/notifications', authMiddleware, adminMiddleware, createNotification);
 router.delete('/notifications', authMiddleware, adminMiddleware, adminDeleteNotification);

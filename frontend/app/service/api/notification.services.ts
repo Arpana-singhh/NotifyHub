@@ -20,6 +20,13 @@ class NotificationService {
         return AdminRecipient.fromApiList(response.data.recipients);
     }
 
+    static async getChartData(): Promise<{ date: string; label: string; count: number }[]> {
+        const response = await axios.get(apiRoutes.notification.chart, {
+            headers: { Accept: "application/json" },
+        });
+        return response.data.data;
+    }
+
     static async getDashboardStats(): Promise<DashboardStatsModel> {
         const response = await axios.get(apiRoutes.notification.stats, {
             headers: { Accept: "application/json" },

@@ -430,3 +430,43 @@ export const markAllAsRead = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const getNotificationChartData = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+
+        const rows = await notificationModel.aggregate([
+            { $match: { createdAt: { $gte: sevenDaysAgo, $lte: today } } },
+            {
+                $group: {
+                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    count: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } },
+        ]);
+
+        // Build a map from the aggregation result
+        const countMap = new Map(rows.map((r) => [r._id, r.count]));
+
+        // Fill in all 7 days, using 0 for days with no notifications
+        const data = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+            const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            data.push({ date: key, label, count: countMap.get(key) ?? 0 });
+        }
+
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        console.error('GET CHART DATA ERROR:', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
