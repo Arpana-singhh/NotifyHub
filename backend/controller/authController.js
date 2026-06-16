@@ -193,6 +193,10 @@ export const changePassword = async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
+        if (user.isBlocked) {
+            return res.status(403).json({ success: false, message: "Your account has been blocked. Please contact support." });
+        }
+
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return res.status(401).json({ success: false, message: "Current password is incorrect" });

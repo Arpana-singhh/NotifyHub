@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Button } from 'antd';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios'; // still used by handleChangePassword
 import DashboardLayout from '../../components/layout/DashboardLayout';
@@ -104,13 +105,16 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <button
+                <Button
+                  type="primary"
+                  block
                   className="nh-btn nh-btn--primary nh-btn--full mt-2"
                   onClick={handleSaveProfile}
-                  disabled={isSaving}
+                  loading={isSaving}
+                  disabled={isSaving || !!user?.isBlocked}
                 >
-                  {isSaving ? 'Saving...' : 'Save changes'}
-                </button>
+                  Save changes
+                </Button>
               </div>
             </div>
           </div>
@@ -155,13 +159,17 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <button
+                <Button
+                  danger
+                  type="primary"
+                  block
                   className="nh-btn nh-btn--danger nh-btn--full"
                   onClick={handleChangePassword}
-                  disabled={changingPassword}
+                  loading={changingPassword}
+                  disabled={changingPassword || !!user?.isBlocked}
                 >
-                  {changingPassword ? 'Updating...' : 'Update password'}
-                </button>
+                  Update password
+                </Button>
               </div>
             </div>
           </div>

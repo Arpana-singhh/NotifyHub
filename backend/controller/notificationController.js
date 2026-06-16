@@ -338,6 +338,11 @@ export const getNotificationById = async (req, res) => {
 
 export const markAsRead = async (req, res) => {
     try {
+        const user = await userModel.findById(req.userId);
+        if (user?.isBlocked) {
+            return res.status(403).json({ success: false, message: "Your account has been blocked. Please contact support." });
+        }
+
         const record = await notificationRecipientModel.findOne({
             _id: req.params.id,
             userId: req.userId,
@@ -387,6 +392,11 @@ export const getCount = async (req, res) => {
 
 export const deleteNotification = async (req, res) => {
     try {
+        const user = await userModel.findById(req.userId);
+        if (user?.isBlocked) {
+            return res.status(403).json({ success: false, message: "Your account has been blocked. Please contact support." });
+        }
+
         const record = await notificationRecipientModel.findOne({
             _id: req.params.id,
             userId: req.userId,
@@ -416,6 +426,11 @@ export const deleteNotification = async (req, res) => {
 
 export const markAllAsRead = async (req, res) => {
     try {
+        const user = await userModel.findById(req.userId);
+        if (user?.isBlocked) {
+            return res.status(403).json({ success: false, message: "Your account has been blocked. Please contact support." });
+        }
+
         await notificationRecipientModel.updateMany(
             { userId: req.userId, isRead: false, isDeletedByUser: false },
             { $set: { isRead: true } }

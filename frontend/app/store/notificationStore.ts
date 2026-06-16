@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
 import NotificationService from '../service/api/notification.services';
 import { TTLMap } from '../utils/TTLMap';
 import type { AdminRecipient } from '../model/AdminNotificationListModel';
@@ -88,7 +90,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             const mapped = items.map((n) => n.toObjectUI());
             userNotifCache.set(USER_CACHE_KEY, mapped);
             set({ notifications: mapped });
-        } catch {
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
             set({ notifications: [] });
         } finally {
             set({ isUserLoading: false });
@@ -111,7 +115,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             const data = await NotificationService.getAdminNotifications();
             adminNotifCache.set(ADMIN_CACHE_KEY, data);
             set({ recipients: data });
-        } catch {
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
             set({ recipients: [] });
         } finally {
             set({ isAdminLoading: false });
@@ -131,7 +137,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             const stats = await NotificationService.getDashboardStats();
             statsCache.set(STATS_CACHE_KEY, stats);
             set({ dashboardStats: stats });
-        } catch {
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
             set({ dashboardStats: null });
         } finally {
             set({ isStatsLoading: false });
@@ -151,7 +159,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             const data = await NotificationService.getChartData();
             chartCache.set(CHART_CACHE_KEY, data);
             set({ chartData: data });
-        } catch {
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
             set({ chartData: [] });
         } finally {
             set({ isChartLoading: false });
@@ -161,67 +171,97 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     /* ---------------- MARK AS READ ---------------- */
 
     markAsRead: async (userNotificationId: string) => {
-        await NotificationService.markAsRead(userNotificationId);
-        const updated = get().notifications.map((n) =>
-            n.userNotificationId === userNotificationId ? { ...n, status: 'read' as const } : n
-        );
-        userNotifCache.set(USER_CACHE_KEY, updated);
-        set({ notifications: updated });
+        try {
+            await NotificationService.markAsRead(userNotificationId);
+            const updated = get().notifications.map((n) =>
+                n.userNotificationId === userNotificationId ? { ...n, status: 'read' as const } : n
+            );
+            userNotifCache.set(USER_CACHE_KEY, updated);
+            set({ notifications: updated });
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
+        }
     },
 
     markAllAsRead: async () => {
-        await NotificationService.markAllAsRead();
-        const updated = get().notifications.map((n) => ({ ...n, status: 'read' as const }));
-        userNotifCache.set(USER_CACHE_KEY, updated);
-        set({ notifications: updated });
+        try {
+            await NotificationService.markAllAsRead();
+            const updated = get().notifications.map((n) => ({ ...n, status: 'read' as const }));
+            userNotifCache.set(USER_CACHE_KEY, updated);
+            set({ notifications: updated });
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
+        }
     },
 
     /* ---------------- DELETE NOTIFICATION (user only) ---------------- */
 
     deleteNotification: async (userNotificationId: string) => {
-        await NotificationService.deleteNotification(userNotificationId);
-        // Update store and bust cache so next fetch reflects the deletion
-        const updated = get().notifications.filter(
-            (n) => n.userNotificationId !== userNotificationId
-        );
-        userNotifCache.set(USER_CACHE_KEY, updated);
-        set({ notifications: updated });
+        try {
+            await NotificationService.deleteNotification(userNotificationId);
+            const updated = get().notifications.filter(
+                (n) => n.userNotificationId !== userNotificationId
+            );
+            userNotifCache.set(USER_CACHE_KEY, updated);
+            set({ notifications: updated });
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
+        }
     },
 
     /* ---------------- DELETE NOTIFICATION (admin) ---------------- */
 
     deleteAdminNotification: async (notificationId: string) => {
-        await NotificationService.deleteAdminNotification(notificationId);
-        const updated = get().recipients.map((r) => ({
-            ...r,
-            notifications: r.notifications.filter((n) => n.notificationId !== notificationId),
-        }));
-        adminNotifCache.set(ADMIN_CACHE_KEY, updated);
-        set({ recipients: updated });
+        try {
+            await NotificationService.deleteAdminNotification(notificationId);
+            const updated = get().recipients.map((r) => ({
+                ...r,
+                notifications: r.notifications.filter((n) => n.notificationId !== notificationId),
+            }));
+            adminNotifCache.set(ADMIN_CACHE_KEY, updated);
+            set({ recipients: updated });
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
+        }
     },
 
     /* ---------------- CREATE NOTIFICATION (admin) ---------------- */
 
     createNotification: async (payload) => {
-        const result = await NotificationService.createNotification(payload);
-        adminNotifCache.delete(ADMIN_CACHE_KEY);
-        statsCache.delete(STATS_CACHE_KEY);
-        chartCache.delete(CHART_CACHE_KEY);
-        return result;
+        try {
+            const result = await NotificationService.createNotification(payload);
+            adminNotifCache.delete(ADMIN_CACHE_KEY);
+            statsCache.delete(STATS_CACHE_KEY);
+            chartCache.delete(CHART_CACHE_KEY);
+            return result;
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
+            throw error;
+        }
     },
 
     /* ---------------- DELETE NOTIFICATION (admin — single user) ---------------- */
 
     deleteAdminUserNotification: async (userId: string, notificationId: string) => {
-        await NotificationService.deleteAdminUserNotification(userId, notificationId);
-        const updated = get().recipients.map((r) => ({
-            ...r,
-            notifications: r.userId === userId
-                ? r.notifications.filter((n) => n.notificationId !== notificationId)
-                : r.notifications,
-        }));
-        adminNotifCache.set(ADMIN_CACHE_KEY, updated);
-        set({ recipients: updated });
+        try {
+            await NotificationService.deleteAdminUserNotification(userId, notificationId);
+            const updated = get().recipients.map((r) => ({
+                ...r,
+                notifications: r.userId === userId
+                    ? r.notifications.filter((n) => n.notificationId !== notificationId)
+                    : r.notifications,
+            }));
+            adminNotifCache.set(ADMIN_CACHE_KEY, updated);
+            set({ recipients: updated });
+        } catch (error) {
+            const message = (error as AxiosError<{ message?: string }>).response?.data?.message;
+            if (message) toast.error(message);
+        }
     },
 
     /* ---------------- SSE REAL-TIME HELPERS ---------------- */
