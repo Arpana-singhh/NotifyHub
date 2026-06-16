@@ -6,6 +6,8 @@ interface ConfirmModalProps {
     message: string;
     okText?: string;
     cancelText?: string;
+    confirmLoading?: boolean;
+    danger?: boolean;
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -16,6 +18,8 @@ export default function ConfirmModal({
     message,
     okText = 'Confirm',
     cancelText = 'Cancel',
+    confirmLoading = false,
+    danger = true,
     onConfirm,
     onCancel,
 }: ConfirmModalProps) {
@@ -25,7 +29,8 @@ export default function ConfirmModal({
             title={title}
             okText={okText}
             cancelText={cancelText}
-            okButtonProps={{ danger: true }}
+            okButtonProps={{ danger }}
+            confirmLoading={confirmLoading}
             onOk={onConfirm}
             onCancel={onCancel}
             centered

@@ -24,10 +24,13 @@ export default function UserManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [blockTarget, setBlockTarget] = useState<UserListItem | null>(null);
+  const [isBlocking, setIsBlocking] = useState(false);
 
   const handleConfirmBlock = async () => {
     if (!blockTarget) return;
+    setIsBlocking(true);
     await toggleBlock(blockTarget.userId);
+    setIsBlocking(false);
     setBlockTarget(null);
   };
 
@@ -154,6 +157,7 @@ export default function UserManagementPage() {
             : `Are you sure you want to block ${blockTarget?.name}? They will no longer be able to log in.`
         }
         okText={blockTarget?.isBlocked ? 'Unblock' : 'Block'}
+        confirmLoading={isBlocking}
         onConfirm={handleConfirmBlock}
         onCancel={() => setBlockTarget(null)}
       />

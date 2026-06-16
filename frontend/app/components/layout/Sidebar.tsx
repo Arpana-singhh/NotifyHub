@@ -15,6 +15,7 @@ const USER_NAV: NavItem[] = [
   { label: 'Dashboard',     href: '/dashboard',      icon: 'fas fa-table-cells' },
   { label: 'Notifications', href: '/notifications',  icon: 'fas fa-bell' },
   { label: 'Profile',       href: '/profile',        icon: 'fas fa-user' },
+  { label: 'Help',          href: '/help',           icon: 'fas fa-circle-question' },
 ];
 
 const ADMIN_NAV: NavItem[] = [
@@ -22,6 +23,7 @@ const ADMIN_NAV: NavItem[] = [
   { label: 'Send Notification', href: '/admin/send',         icon: 'fas fa-paper-plane' },
   { label: 'Notifications',     href: '/notifications',      icon: 'fas fa-bell' },
   { label: 'Users',             href: '/admin/users',        icon: 'fas fa-users' },
+  { label: 'Support',           href: '/admin/support',      icon: 'fas fa-headset' },
 ];
 
 export default function Sidebar() {

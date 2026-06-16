@@ -39,6 +39,7 @@ export default function Navbar({
         <i className="fas fa-bell" />
         NotifyHub
         {isAdmin && <span className="nh-navbar__admin-badge">Admin</span>}
+        {user?.isBlocked && <span className="nh-navbar__blocked-badge">Blocked</span>}
       </Link>
 
       <div className="nh-navbar__right">

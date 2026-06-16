@@ -27,6 +27,12 @@ const apiRoutes = {
     chart:  `${config.baseUrl}/admin/dashboard/chart`,
     create: `${config.baseUrl}/admin/notifications`,
   },
+  support: {
+    create:    `${config.baseUrl}/support`,
+    adminList: `${config.baseUrl}/admin/support`,
+    toggle:    (id: string) => `${config.baseUrl}/admin/support/${id}/toggle`,
+    delete:    (id: string) => `${config.baseUrl}/admin/support/${id}`,
+  },
 };
 
 export default apiRoutes;

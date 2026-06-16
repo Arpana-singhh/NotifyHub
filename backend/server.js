@@ -7,6 +7,7 @@ import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import sseRoutes from './routes/sseRoutes.js';
+import supportRoutes from './routes/supportRoutes.js';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use('/api', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api/sse', sseRoutes); // Server-Sent Events — persistent push channel per user
+app.use('/api', supportRoutes);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

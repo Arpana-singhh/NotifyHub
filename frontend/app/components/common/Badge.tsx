@@ -2,7 +2,8 @@ type BadgeVariant =
   | 'info' | 'success' | 'warning' | 'error'
   | 'primary' | 'neutral'
   | 'role-user' | 'role-admin'
-  | 'active' | 'blocked';
+  | 'active' | 'blocked'
+  | 'ticket-open' | 'ticket-resolved';
 
 interface BadgeProps {
   variant: BadgeVariant;

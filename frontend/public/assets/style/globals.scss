@@ -501,8 +501,10 @@ textarea.nh-input {
   &--neutral { background: var(--color-success-bg); color: var(--color-success-text); }
   &--role-user  { background: var(--color-border-light); color: var(--color-text-secondary); }
   &--role-admin { background: var(--color-primary); color: var(--color-white); }
-  &--active     { background: var(--color-success-bg); color: var(--color-success-text); }
-  &--blocked    { background: var(--color-warning-bg); color: var(--color-warning-text); }
+  &--active          { background: var(--color-success-bg); color: var(--color-success-text); }
+  &--blocked         { background: var(--color-warning-bg); color: var(--color-warning-text); }
+  &--ticket-open     { background: var(--color-warning-bg); color: var(--color-warning-text); }
+  &--ticket-resolved { background: var(--color-success-bg); color: var(--color-success-text); }
 }
 
 // ─────────────────────────────────────────────
@@ -666,6 +668,16 @@ textarea.nh-input {
     font-weight: var(--font-weight-medium);
     color: var(--color-primary-dark);
     background: var(--color-primary-light);
+    border-radius: var(--radius-full);
+    padding: 1px var(--space-2);
+    margin-left: var(--space-1);
+  }
+
+  &__blocked-badge {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: #fff;
+    background: var(--color-danger, #e53e3e);
     border-radius: var(--radius-full);
     padding: 1px var(--space-2);
     margin-left: var(--space-1);
@@ -1118,6 +1130,15 @@ textarea.nh-input {
     color: var(--color-text-primary);
     font-size: var(--font-size-sm);
     display: block;
+  }
+
+  &__truncate {
+    display: block;
+    max-width: 220px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: default;
   }
 }
 
@@ -2361,6 +2382,7 @@ textarea.nh-input {
   font-size: 0.75rem !important;
 }
 
+
 .h-100{
   height:100%;
 }
@@ -2545,4 +2567,61 @@ textarea.nh-input {
   @include phone-xr{
     display:none;
   }
+}
+
+/* ── Help Page ─────────────────────────────────────────────────────── */
+.help-section__heading {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-5);
+  display: flex;
+  align-items: center;
+  i { color: var(--color-primary); }
+}
+
+.help-faq__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.help-faq__item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.help-faq__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+}
+
+.help-faq__question {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-1);
+}
+
+.help-faq__answer {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.help-form__optional {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+  margin-left: var(--space-1);
 }
