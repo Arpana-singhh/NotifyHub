@@ -63,7 +63,8 @@ async function proxy(
     // set-cookie so backend cookies never land on our domain.
     const responseHeaders = new Headers();
     upstream.headers.forEach((value, key) => {
-        if (key.toLowerCase() !== 'set-cookie') {
+        const lower = key.toLowerCase();
+        if (!['set-cookie', 'content-encoding', 'content-length', 'transfer-encoding'].includes(lower)) {
             responseHeaders.set(key, value);
         }
     });
